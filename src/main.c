@@ -14,6 +14,7 @@ const int FONT_RESOLUTION = 8;
 const int FONT_SCALE = 2;
 const int FONT_SIZE = FONT_RESOLUTION * FONT_SCALE;
 const int LINE_SPACE = 8;
+const int DEBUG_LINE_SPACE = 16;
 const int LINE_BUFFER_SIZE = 255;
 
 SDL_Color fontColor = {255, 172, 28, 255};
@@ -77,22 +78,22 @@ bool loadTTFs() {
     return true;
 }
 
-bool renderDebugTexts(int x, int y, char* textToRender) {
+LTexture* getFontTexture(char* textToRender) {
     SDL_Surface* fontSurface = TTF_RenderText_Solid(dFont, textToRender, fontColor);
     if (fontSurface == NULL) {
         SDL_Log("TTF failed to render text to surface!\nSDL_Error: %s", SDL_GetError());
         return false;
     }
-    SDL_Texture* fontTexture = SDL_CreateTextureFromSurface(dRenderer, fontSurface);
-    if (fontTexture == NULL) {
+    LTexture* texture = malloc(sizeof(LTexture));
+    texture->texture = SDL_CreateTextureFromSurface(dRenderer, fontSurface);
+    if (texture->texture == NULL) {
         SDL_Log("TTF failed to render texture from surface!\nSDL_Error: %s", SDL_GetError());
-        return false;
+        return NULL;
     }
-
-    SDL_Rect renderQuad = {x,y,fontSurface->w, fontSurface->h};
-    SDL_RenderCopy(dRenderer, fontTexture, NULL, &renderQuad);
+    texture->w = fontSurface->w;
+    texture->h = fontSurface->h;
     SDL_FreeSurface(fontSurface);
-    return true;
+    return texture;
 }
 
 bool loadMedia() {
@@ -193,6 +194,11 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
+    LTexture* d1 = getFontTexture("Debug first line");
+    LTexture* d2 = getFontTexture("Debug second line");
+    SDL_Rect rq1 = {0, 0,d1->w,d1->h};
+    SDL_Rect rq2 = {0, DEBUG_LINE_SPACE,d2->w,d2->h};
+
     while (!quit) {
         startTimer(&syncTimer);
         while (SDL_PollEvent(&e) != 0) {
@@ -218,8 +224,8 @@ int main(int argc, char *argv[]) {
         if (dRenderer != NULL) {
             SDL_SetRenderDrawColor(dRenderer, 33,33,33,255);
             SDL_RenderClear(dRenderer);
-            renderDebugTexts(0,0,"Debug first line");
-            renderDebugTexts(0,16,"Debug second line");
+            SDL_RenderCopy(dRenderer, d1->texture, NULL, &rq1);
+            SDL_RenderCopy(dRenderer, d2->texture, NULL, &rq2);
             SDL_RenderPresent(dRenderer);
         }
         //wait
@@ -229,6 +235,8 @@ int main(int argc, char *argv[]) {
         }
         countedFrames++;
     }
+    free(d1);
+    free(d2);
     cleanup();
     return 0;
 }
