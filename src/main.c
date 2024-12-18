@@ -7,7 +7,8 @@ const int SCREEN_HEIGHT = 480;
 const int FRAME_RATE = 16;
 const int TICKS_PER_FRAME = 1000 / FRAME_RATE;
 const int FONT_RESOLUTION = 8;
-const int FONT_SCALE = 2.5;
+const int FONT_SCALE = 2;
+const int LINE_BUFFER_SIZE = 255;
 
 typedef struct LTimer {
     bool started;
@@ -121,6 +122,9 @@ void cleanup() {
 int main(int argc, char *argv[]) {
     bool quit = false;
     SDL_Event e;
+    char lineBuffer[LINE_BUFFER_SIZE];
+    int linePos = 0;
+
 
     if (!(init() && loadMedia())) {
         return 0;
@@ -134,13 +138,17 @@ int main(int argc, char *argv[]) {
                 quit = true;
             }
             if (e.type == SDL_KEYDOWN) {
-
+                if (e.key.keysym.sym >= 'a' && e.key.keysym.sym <= 'z' || e.key.keysym.sym >= '0' && e.key.keysym.sym <= '9' || e.key.keysym.sym == ' ') {
+                    lineBuffer[linePos++] = e.key.keysym.sym;
+                } else if (e.key.keysym.sym == SDLK_BACKSPACE) {
+                    lineBuffer[--linePos] = EOF;
+                }
             }
         }
 
         SDL_SetRenderDrawColor(gRenderer, 139,64,0,255);
         SDL_RenderClear(gRenderer);
-        renderText(0, 0, "hello world");
+        renderText(0, 0, lineBuffer);
 
         SDL_RenderPresent(gRenderer);
     }
