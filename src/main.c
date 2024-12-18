@@ -1,19 +1,23 @@
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 #include "stdbool.h"
 
+const bool DEBUG_WINDOW = true;
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 480;
+const int DEBUG_WIDTH = 480;
+const int DEBUG_HEIGHT = 600;
 const int FRAME_RATE = 16;
 const int TICKS_PER_FRAME = 1000 / FRAME_RATE;
 const int FONT_RESOLUTION = 8;
-const int FONT_SCALE = 3;
+const int FONT_SCALE = 2;
 const int FONT_SIZE = FONT_RESOLUTION * FONT_SCALE;
 const int LINE_SPACE = 8;
 const int LINE_BUFFER_SIZE = 255;
 
-int linePos = 0;
-char lineBuffer[LINE_BUFFER_SIZE];
+const SDL_Color fontColor = {255, 172, 28, 255};
+const SDL_Color bgColor = {126,47,8, 255};
 
 typedef struct LTimer {
     bool started;
@@ -26,12 +30,13 @@ typedef struct LTexture {
     int h;
 } LTexture;
 
-SDL_Color fontColor = {255, 172, 28, 255};
 SDL_Window* gWindow = NULL;
-SDL_Surface* gSurface = NULL;
+SDL_Window* dWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
+SDL_Renderer* dRenderer = NULL;
 LTexture gFontSprite;
-LTimer gTickTimer;
+int linePos = 0;
+char lineBuffer[LINE_BUFFER_SIZE];
 
 void startTimer(LTimer* t) {
     t->started = true;
@@ -93,7 +98,6 @@ void renderText(const int x, const int y, const char* text) {
 
 void renderTexture(const int x, const int y, LTexture* texture) {
     const SDL_Rect renderQuad = {x, y, texture->w, texture->h};
-    // SDL_SetTextureColorMod(texture->texture, color_coral.r, color_coral.g, color_coral.b);
     SDL_RenderCopy(gRenderer, texture->texture, NULL, &renderQuad);
 }
 
@@ -102,20 +106,29 @@ bool init() {
         SDL_Log("Failed to init SDL!\nSDL_Error: %s", SDL_GetError());
         return false;
     }
-    gWindow = SDL_CreateWindow("carplay", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-    if (gWindow == NULL) {
-        SDL_Log("Failed to create SDL Window!\nSDL_Error: %s", SDL_GetError());
-        return false;
-    }
-    gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
-    if (gRenderer == NULL) {
-        SDL_Log("Failed to create renderer!\nSDL_Error: %s", SDL_GetError());
-        return false;
-    }
     if (!IMG_Init(IMG_INIT_PNG)) {
         SDL_Log("SDL IMG could not init!\nSDL_Error: %s", SDL_GetError());
         return false;
     }
+    if (TTF_Init() == -1) {
+        SDL_Log("SDL TTF could not init!\nSDL_Error: %s", SDL_GetError());
+        return false;
+    }
+
+    gWindow = SDL_CreateWindow("carplay", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+    dWindow = SDL_CreateWindow("carplay debug", SCREEN_WIDTH + 10, 0, DEBUG_WIDTH, DEBUG_HEIGHT, SDL_WINDOW_SHOWN);
+    if (gWindow == NULL || dWindow == NULL) {
+        SDL_Log("Failed to create SDL Window!\nSDL_Error: %s", SDL_GetError());
+        return false;
+    }
+
+    gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
+    dRenderer = SDL_CreateRenderer(dWindow, -1, SDL_RENDERER_ACCELERATED);
+    if (gRenderer == NULL || dRenderer == NULL) {
+        SDL_Log("Failed to create renderer!\nSDL_Error: %s", SDL_GetError());
+        return false;
+    }
+
     return true;
 }
 
@@ -123,7 +136,13 @@ bool loadMedia() {
     return loadFontSprite();
 }
 
+void destroyDebugWindow() {
+    SDL_DestroyRenderer(dRenderer);
+    SDL_DestroyWindow(dWindow);
+}
+
 void cleanup() {
+    destroyDebugWindow();
     SDL_DestroyRenderer(gRenderer);
     SDL_DestroyWindow(gWindow);
 
@@ -149,19 +168,21 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    startTimer(&gTickTimer);
-
     while (!quit) {
         while (SDL_PollEvent(&e) != 0) {
-            if (e.type == SDL_QUIT) {
-                quit = true;
+            if (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_CLOSE) {
+                if (SDL_GetWindowID(dWindow) == e.window.windowID) {
+                    destroyDebugWindow();
+                } else {
+                    quit = true;
+                }
             }
             if (e.type == SDL_KEYDOWN) {
                 handleKeyPress(e.key.keysym);
             }
         }
 
-        SDL_SetRenderDrawColor(gRenderer, 139,64,0,255);
+        SDL_SetRenderDrawColor(gRenderer, bgColor.r, bgColor.g, bgColor.b, bgColor.a);
         SDL_RenderClear(gRenderer);
 
         renderText(0,1,lineBuffer);
