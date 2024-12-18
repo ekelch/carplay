@@ -7,8 +7,13 @@ const int SCREEN_HEIGHT = 480;
 const int FRAME_RATE = 16;
 const int TICKS_PER_FRAME = 1000 / FRAME_RATE;
 const int FONT_RESOLUTION = 8;
-const int FONT_SCALE = 2;
+const int FONT_SCALE = 3;
+const int FONT_SIZE = FONT_RESOLUTION * FONT_SCALE;
+const int LINE_SPACE = 8;
 const int LINE_BUFFER_SIZE = 255;
+
+int linePos = 0;
+char lineBuffer[LINE_BUFFER_SIZE];
 
 typedef struct LTimer {
     bool started;
@@ -58,7 +63,7 @@ bool loadFontSprite() {
 }
 
 void renderText(const int x, const int y, const char* text) {
-    SDL_Rect renderQuad = {x, y, FONT_RESOLUTION * FONT_SCALE, FONT_RESOLUTION * FONT_SCALE};
+    SDL_Rect renderQuad = {x, y, FONT_SIZE, FONT_SIZE};
     SDL_Rect clip = {0,0,FONT_RESOLUTION, FONT_RESOLUTION};
     for (int i = 0; i < strlen(text); i++) {
         char c = text[i];
@@ -67,15 +72,22 @@ void renderText(const int x, const int y, const char* text) {
             offset = c - 'A';
         } else if (c >= 'a' && c <= 'z') {
             offset = c - 'a';
-        } else if (c >= '1' && c <= '9') {
-            offset = c - '1' + 26;
-        } else {
+        } else if (c >= '0' && c <= '9') {
+            offset = c - '0' + 26;
+        } else if (c == ' ') {
             offset = 63;
+        } else if (c == '\n') {
+            renderQuad.x = 0;
+            renderQuad.y += FONT_SIZE + LINE_SPACE;
+            continue;
+        } else {
+            continue;
         }
+
         clip.x = FONT_RESOLUTION * (offset % FONT_RESOLUTION);
         clip.y = FONT_RESOLUTION * (offset / FONT_RESOLUTION);
         SDL_RenderCopy(gRenderer, gFontSprite.texture, &clip, &renderQuad);
-        renderQuad.x = renderQuad.x + FONT_RESOLUTION * FONT_SCALE;
+        renderQuad.x += FONT_SIZE;
     }
 }
 
@@ -119,12 +131,19 @@ void cleanup() {
     SDL_Quit();
 }
 
+void handleKeyPress(SDL_Keysym ks) {
+    if (ks.sym >= SDLK_a && ks.sym <= SDLK_z || ks.sym >= SDLK_0 && ks.sym <= SDLK_9 || ks.sym == SDLK_SPACE) {
+        lineBuffer[linePos++] = ks.sym;
+    } else if (ks.sym == SDLK_BACKSPACE) {
+        lineBuffer[--linePos] = '\0';
+    } else if (ks.sym == SDLK_RETURN) {
+        lineBuffer[linePos++] = '\n';
+    }
+}
+
 int main(int argc, char *argv[]) {
     bool quit = false;
     SDL_Event e;
-    char lineBuffer[LINE_BUFFER_SIZE];
-    int linePos = 0;
-
 
     if (!(init() && loadMedia())) {
         return 0;
@@ -138,17 +157,14 @@ int main(int argc, char *argv[]) {
                 quit = true;
             }
             if (e.type == SDL_KEYDOWN) {
-                if (e.key.keysym.sym >= 'a' && e.key.keysym.sym <= 'z' || e.key.keysym.sym >= '0' && e.key.keysym.sym <= '9' || e.key.keysym.sym == ' ') {
-                    lineBuffer[linePos++] = e.key.keysym.sym;
-                } else if (e.key.keysym.sym == SDLK_BACKSPACE) {
-                    lineBuffer[--linePos] = EOF;
-                }
+                handleKeyPress(e.key.keysym);
             }
         }
 
         SDL_SetRenderDrawColor(gRenderer, 139,64,0,255);
         SDL_RenderClear(gRenderer);
-        renderText(0, 0, lineBuffer);
+
+        renderText(0,1,lineBuffer);
 
         SDL_RenderPresent(gRenderer);
     }
