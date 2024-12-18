@@ -8,7 +8,7 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 480;
 const int DEBUG_WIDTH = 480;
 const int DEBUG_HEIGHT = 600;
-const int FRAME_RATE = 16;
+const int FRAME_RATE = 12;
 const int TICKS_PER_FRAME = 1000 / FRAME_RATE;
 const int FONT_RESOLUTION = 8;
 const int FONT_SCALE = 2;
@@ -185,13 +185,16 @@ void handleKeyPress(SDL_Keysym ks) {
 
 int main(int argc, char *argv[]) {
     bool quit = false;
+    LTimer syncTimer;
     SDL_Event e;
+    int32_t countedFrames = 0;
 
     if (!(init() && loadMedia())) {
         return 0;
     }
 
     while (!quit) {
+        startTimer(&syncTimer);
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_CLOSE) {
                 if (SDL_GetWindowID(dWindow) == e.window.windowID) {
@@ -205,17 +208,26 @@ int main(int argc, char *argv[]) {
             }
         }
 
+        //main window
         SDL_SetRenderDrawColor(gRenderer, bgColor.r, bgColor.g, bgColor.b, bgColor.a);
         SDL_RenderClear(gRenderer);
-        SDL_SetRenderDrawColor(dRenderer, bgColor.r, bgColor.g, bgColor.b, bgColor.a);
-        SDL_RenderClear(dRenderer);
-
         renderText(0,1,lineBuffer);
-        renderDebugTexts(0,0,"Debug first line");
-        renderDebugTexts(0,16,"Debug second line");
-
         SDL_RenderPresent(gRenderer);
-        SDL_RenderPresent(dRenderer);
+
+        //debug window
+        if (dRenderer != NULL) {
+            SDL_SetRenderDrawColor(dRenderer, 33,33,33,255);
+            SDL_RenderClear(dRenderer);
+            renderDebugTexts(0,0,"Debug first line");
+            renderDebugTexts(0,16,"Debug second line");
+            SDL_RenderPresent(dRenderer);
+        }
+        //wait
+        Uint64 frameTicks = SDL_GetTicks64() - syncTimer.startTicks;
+        if (frameTicks < TICKS_PER_FRAME) {
+            SDL_Delay(TICKS_PER_FRAME - frameTicks);
+        }
+        countedFrames++;
     }
     cleanup();
     return 0;
