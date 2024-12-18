@@ -16,8 +16,8 @@ const int FONT_SIZE = FONT_RESOLUTION * FONT_SCALE;
 const int LINE_SPACE = 8;
 const int LINE_BUFFER_SIZE = 255;
 
-const SDL_Color fontColor = {255, 172, 28, 255};
-const SDL_Color bgColor = {126,47,8, 255};
+SDL_Color fontColor = {255, 172, 28, 255};
+SDL_Color bgColor = {126,47,8, 255};
 
 typedef struct LTimer {
     bool started;
@@ -34,6 +34,7 @@ SDL_Window* gWindow = NULL;
 SDL_Window* dWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 SDL_Renderer* dRenderer = NULL;
+TTF_Font* dFont = NULL;
 LTexture gFontSprite;
 int linePos = 0;
 char lineBuffer[LINE_BUFFER_SIZE];
@@ -67,6 +68,37 @@ bool loadFontSprite() {
     return true;
 }
 
+bool loadTTFs() {
+    dFont = TTF_OpenFont("./resources/fira.ttf", 16);
+    if (dFont == NULL) {
+        SDL_Log("Failed to open TTF font!\nSDL_Error: %s", SDL_GetError());
+        return false;
+    }
+    return true;
+}
+
+bool renderDebugTexts(int x, int y, char* textToRender) {
+    SDL_Surface* fontSurface = TTF_RenderText_Solid(dFont, textToRender, fontColor);
+    if (fontSurface == NULL) {
+        SDL_Log("TTF failed to render text to surface!\nSDL_Error: %s", SDL_GetError());
+        return false;
+    }
+    SDL_Texture* fontTexture = SDL_CreateTextureFromSurface(dRenderer, fontSurface);
+    if (fontTexture == NULL) {
+        SDL_Log("TTF failed to render texture from surface!\nSDL_Error: %s", SDL_GetError());
+        return false;
+    }
+
+    SDL_Rect renderQuad = {x,y,fontSurface->w, fontSurface->h};
+    SDL_RenderCopy(dRenderer, fontTexture, NULL, &renderQuad);
+    SDL_FreeSurface(fontSurface);
+    return true;
+}
+
+bool loadMedia() {
+    return loadFontSprite() && loadTTFs();
+}
+
 void renderText(const int x, const int y, const char* text) {
     SDL_Rect renderQuad = {x, y, FONT_SIZE, FONT_SIZE};
     SDL_Rect clip = {0,0,FONT_RESOLUTION, FONT_RESOLUTION};
@@ -94,11 +126,6 @@ void renderText(const int x, const int y, const char* text) {
         SDL_RenderCopy(gRenderer, gFontSprite.texture, &clip, &renderQuad);
         renderQuad.x += FONT_SIZE;
     }
-}
-
-void renderTexture(const int x, const int y, LTexture* texture) {
-    const SDL_Rect renderQuad = {x, y, texture->w, texture->h};
-    SDL_RenderCopy(gRenderer, texture->texture, NULL, &renderQuad);
 }
 
 bool init() {
@@ -130,10 +157,6 @@ bool init() {
     }
 
     return true;
-}
-
-bool loadMedia() {
-    return loadFontSprite();
 }
 
 void destroyDebugWindow() {
@@ -184,10 +207,15 @@ int main(int argc, char *argv[]) {
 
         SDL_SetRenderDrawColor(gRenderer, bgColor.r, bgColor.g, bgColor.b, bgColor.a);
         SDL_RenderClear(gRenderer);
+        SDL_SetRenderDrawColor(dRenderer, bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+        SDL_RenderClear(dRenderer);
 
         renderText(0,1,lineBuffer);
+        renderDebugTexts(0,0,"Debug first line");
+        renderDebugTexts(0,16,"Debug second line");
 
         SDL_RenderPresent(gRenderer);
+        SDL_RenderPresent(dRenderer);
     }
     cleanup();
     return 0;
