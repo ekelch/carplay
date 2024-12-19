@@ -16,6 +16,7 @@ const int FONT_SIZE = FONT_RESOLUTION * FONT_SCALE;
 const int LINE_SPACE = 8;
 const int DEBUG_LINE_SPACE = 16;
 const int LINE_BUFFER_SIZE = 255;
+const int DEBUG_OPTIONS_COUNT = 2;
 
 SDL_Color fontColor = {255, 172, 28, 255};
 SDL_Color bgColor = {126,47,8, 255};
@@ -31,6 +32,13 @@ typedef struct LTexture {
     int h;
 } LTexture;
 
+typedef struct LDebugOption {
+    const char* description;
+    int value;
+    LTexture* sdlTexture;
+    SDL_Rect* renderQuad;
+} LDebugOption;
+
 SDL_Window* gWindow = NULL;
 SDL_Window* dWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
@@ -39,6 +47,8 @@ TTF_Font* dFont = NULL;
 LTexture gFontSprite;
 int linePos = 0;
 char lineBuffer[LINE_BUFFER_SIZE];
+int selectedOption = 0;
+LDebugOption debugOptions[DEBUG_OPTIONS_COUNT] = {{"value 1", 23}, {"value 2", 4}};
 
 void startTimer(LTimer* t) {
     t->started = true;
@@ -78,7 +88,7 @@ bool loadTTFs() {
     return true;
 }
 
-LTexture* getFontTexture(char* textToRender) {
+LTexture* renderFontTexture(const char* textToRender) {
     SDL_Surface* fontSurface = TTF_RenderText_Solid(dFont, textToRender, fontColor);
     if (fontSurface == NULL) {
         SDL_Log("TTF failed to render text to surface!\nSDL_Error: %s", SDL_GetError());
@@ -94,6 +104,38 @@ LTexture* getFontTexture(char* textToRender) {
     texture->h = fontSurface->h;
     SDL_FreeSurface(fontSurface);
     return texture;
+}
+
+char* formatDebugFont(const LDebugOption debugOption) {
+    char* r = malloc(sizeof(char) * 63);
+    sprintf(r, "%s:%4d", debugOption.description, debugOption.value);
+    return r;
+}
+
+bool renderFontForDebugOption(LDebugOption* debugOption, const int index) {
+    SDL_Surface* fontSurface = TTF_RenderText_Solid(dFont, formatDebugFont(*debugOption), fontColor);
+    if (fontSurface == NULL) {
+        SDL_Log("TTF failed to render text to surface!\nSDL_Error: %s", SDL_GetError());
+        return false;
+    }
+    free(debugOption->sdlTexture);
+    free(debugOption->renderQuad);
+    debugOption->sdlTexture = malloc(sizeof(SDL_Texture*));
+    debugOption->sdlTexture->texture = SDL_CreateTextureFromSurface(dRenderer, fontSurface);
+    if (debugOption->sdlTexture == NULL) {
+        SDL_Log("TTF failed to render texture from surface!\nSDL_Error: %s", SDL_GetError());
+        return false;
+    }
+    debugOption->sdlTexture->w = fontSurface->w;
+    debugOption->sdlTexture->h = fontSurface->h;
+    SDL_Rect* renderQuad = malloc(sizeof(SDL_Rect*));
+    renderQuad->x = 0;
+    renderQuad->y = DEBUG_LINE_SPACE * index;
+    renderQuad->w = fontSurface->w;
+    renderQuad->h = fontSurface->h;
+    debugOption->renderQuad = renderQuad;
+    SDL_FreeSurface(fontSurface);
+    return true;
 }
 
 bool loadMedia() {
@@ -174,7 +216,7 @@ void cleanup() {
     SDL_Quit();
 }
 
-void handleKeyPress(SDL_Keysym ks) {
+void handleMainWindowKeyPress(SDL_Keysym ks) {
     if (ks.sym >= SDLK_a && ks.sym <= SDLK_z || ks.sym >= SDLK_0 && ks.sym <= SDLK_9 || ks.sym == SDLK_SPACE) {
         lineBuffer[linePos++] = ks.sym;
     } else if (ks.sym == SDLK_BACKSPACE) {
@@ -182,6 +224,28 @@ void handleKeyPress(SDL_Keysym ks) {
     } else if (ks.sym == SDLK_RETURN) {
         lineBuffer[linePos++] = '\n';
     }
+}
+
+void handleDebugWindowKeypress(SDL_Keysym ks) {
+    switch (ks.sym) {
+        case SDLK_UP:
+            if (selectedOption - 1 >= 0) {
+                selectedOption--;
+            }
+            break;
+        case SDLK_DOWN:
+            if (selectedOption + 1 < DEBUG_OPTIONS_COUNT) {
+                selectedOption++;
+            }
+            break;
+        // case SDLK_LEFT:
+        //     break;
+        // case SDLK_RIGHT:
+        //     break;
+        default:
+            break;
+    }
+
 }
 
 int main(int argc, char *argv[]) {
@@ -194,13 +258,9 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    char s1[63]; char s2[63];
-    sprintf(s1, "Value 1: %4d", 23);
-    sprintf(s2, "Value 2: %4d", 4);
-    LTexture* d1 = getFontTexture(s1);
-    LTexture* d2 = getFontTexture(s2);
-    SDL_Rect rq1 = {0, 0,d1->w,d1->h};
-    SDL_Rect rq2 = {0, DEBUG_LINE_SPACE,d2->w,d2->h};
+    for (int i = 0; i < DEBUG_OPTIONS_COUNT; i++) {
+        renderFontForDebugOption(&debugOptions[i], i);
+    }
 
     while (!quit) {
         startTimer(&syncTimer);
@@ -213,8 +273,13 @@ int main(int argc, char *argv[]) {
                 }
             }
             if (e.type == SDL_KEYDOWN) {
-                handleKeyPress(e.key.keysym);
+                if (e.window.windowID == SDL_GetWindowID(gWindow)) {
+                    handleMainWindowKeyPress(e.key.keysym);
+                } else if (e.window.windowID == SDL_GetWindowID(dWindow)) {
+                    handleDebugWindowKeypress(e.key.keysym);
+                }
             }
+
         }
 
         //main window
@@ -227,8 +292,8 @@ int main(int argc, char *argv[]) {
         if (dRenderer != NULL) {
             SDL_SetRenderDrawColor(dRenderer, 33,33,33,255);
             SDL_RenderClear(dRenderer);
-            SDL_RenderCopy(dRenderer, d1->texture, NULL, &rq1);
-            SDL_RenderCopy(dRenderer, d2->texture, NULL, &rq2);
+            SDL_RenderCopy(dRenderer, debugOptions[0].sdlTexture->texture, NULL, debugOptions[0].renderQuad);
+            SDL_RenderCopy(dRenderer, debugOptions[1].sdlTexture->texture, NULL, debugOptions[1].renderQuad);
             SDL_RenderPresent(dRenderer);
         }
         //wait
@@ -238,8 +303,6 @@ int main(int argc, char *argv[]) {
         }
         countedFrames++;
     }
-    free(d1);
-    free(d2);
     cleanup();
     return 0;
 }
