@@ -42,6 +42,12 @@ typedef struct LDebugOption {
     SDL_Rect* renderQuad;
 } LDebugOption;
 
+typedef enum DebugOption {
+    DEBUG_BACKGROUND_COLOR_R,
+    DEBUG_BACKGROUND_COLOR_G,
+    DEBUG_BACKGROUND_COLOR_B,
+} DebugOption;
+
 SDL_Window* gWindow = NULL;
 SDL_Window* dWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
@@ -51,11 +57,7 @@ LTexture gFontSprite;
 int linePos = 0;
 char lineBuffer[LINE_BUFFER_SIZE];
 int selectedOption = 0;
-LDebugOption debugOptions[DEBUG_OPTIONS_COUNT] = {
-    {"r", 120, 0, 0, 255},
-    {"g", 80, 1, 0, 255},
-    {"b", 7, 2, 0, 255}
-};
+LDebugOption debugOptions[DEBUG_OPTIONS_COUNT];
 
 void startTimer(LTimer* t) {
     t->started = true;
@@ -139,7 +141,32 @@ bool renderFontForDebugOption(LDebugOption* debugOption) {
     return true;
 }
 
+LDebugOption* mallocDebugOption(const char* description, const int index, const int value, const int min, const int max) {
+    LDebugOption* db = malloc(sizeof(LDebugOption));
+    db->description = description;
+    db->index = index;
+    db->value = value;
+    db->min = min;
+    db->max = max;
+    return db;
+}
+
+void updDebug(const int index, const char* description, const int value, const int min, const int max) {
+    debugOptions[index].index = index;
+    debugOptions[index].description = description;
+    debugOptions[index].value = value;
+    debugOptions[index].min = min;
+    debugOptions[index].max = max;
+}
+
+void populateDebugOptions() {
+    updDebug(DEBUG_BACKGROUND_COLOR_R, "r", 120, 0, 255);
+    updDebug(DEBUG_BACKGROUND_COLOR_G, "g", 80, 0, 255);
+    updDebug(DEBUG_BACKGROUND_COLOR_B, "b", 7, 0, 255);
+}
+
 bool loadMedia() {
+    populateDebugOptions();
     return loadFontSprite() && loadTTFs();
 }
 
