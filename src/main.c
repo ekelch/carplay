@@ -16,10 +16,11 @@ const int FONT_SIZE = FONT_RESOLUTION * FONT_SCALE;
 const int LINE_SPACE = 8;
 const int DEBUG_LINE_SPACE = 16;
 const int LINE_BUFFER_SIZE = 255;
-const int DEBUG_OPTIONS_COUNT = 2;
+const int DEBUG_OPTIONS_COUNT = 3;
 
-SDL_Color fontColor = {255, 172, 28, 255};
-SDL_Color bgColor = {126,47,8, 255};
+const SDL_Color fontColor = {255, 172, 28, 255};
+const SDL_Color selectedFontColor = {130, 233, 211, 255};
+const SDL_Color bgColor = {126,47,8, 255};
 
 typedef struct LTimer {
     bool started;
@@ -35,6 +36,7 @@ typedef struct LTexture {
 typedef struct LDebugOption {
     const char* description;
     int value;
+    int index;
     LTexture* sdlTexture;
     SDL_Rect* renderQuad;
 } LDebugOption;
@@ -48,7 +50,11 @@ LTexture gFontSprite;
 int linePos = 0;
 char lineBuffer[LINE_BUFFER_SIZE];
 int selectedOption = 0;
-LDebugOption debugOptions[DEBUG_OPTIONS_COUNT] = {{"value 1", 23}, {"value 2", 4}};
+LDebugOption debugOptions[DEBUG_OPTIONS_COUNT] = {
+    {"value 1", 23, 0},
+    {"value 2", 9, 1},
+    {"value 3", 4, 2}
+};
 
 void startTimer(LTimer* t) {
     t->started = true;
@@ -74,7 +80,6 @@ bool loadFontSprite() {
     }
     gFontSprite.w = surface->w;
     gFontSprite.h = surface->h;
-    SDL_SetTextureColorMod(gFontSprite.texture, fontColor.r, fontColor.g, fontColor.b);
     SDL_FreeSurface(surface);
     return true;
 }
@@ -88,31 +93,13 @@ bool loadTTFs() {
     return true;
 }
 
-LTexture* renderFontTexture(const char* textToRender) {
-    SDL_Surface* fontSurface = TTF_RenderText_Solid(dFont, textToRender, fontColor);
-    if (fontSurface == NULL) {
-        SDL_Log("TTF failed to render text to surface!\nSDL_Error: %s", SDL_GetError());
-        return false;
-    }
-    LTexture* texture = malloc(sizeof(LTexture));
-    texture->texture = SDL_CreateTextureFromSurface(dRenderer, fontSurface);
-    if (texture->texture == NULL) {
-        SDL_Log("TTF failed to render texture from surface!\nSDL_Error: %s", SDL_GetError());
-        return NULL;
-    }
-    texture->w = fontSurface->w;
-    texture->h = fontSurface->h;
-    SDL_FreeSurface(fontSurface);
-    return texture;
-}
-
 char* formatDebugFont(const LDebugOption debugOption) {
     char* r = malloc(sizeof(char) * 63);
     sprintf(r, "%s:%4d", debugOption.description, debugOption.value);
     return r;
 }
 
-bool renderFontForDebugOption(LDebugOption* debugOption, const int index) {
+bool renderFontForDebugOption(LDebugOption* debugOption) {
     SDL_Surface* fontSurface = TTF_RenderText_Solid(dFont, formatDebugFont(*debugOption), fontColor);
     if (fontSurface == NULL) {
         SDL_Log("TTF failed to render text to surface!\nSDL_Error: %s", SDL_GetError());
@@ -130,10 +117,16 @@ bool renderFontForDebugOption(LDebugOption* debugOption, const int index) {
     debugOption->sdlTexture->h = fontSurface->h;
     SDL_Rect* renderQuad = malloc(sizeof(SDL_Rect*));
     renderQuad->x = 0;
-    renderQuad->y = DEBUG_LINE_SPACE * index;
+    renderQuad->y = DEBUG_LINE_SPACE * debugOption->index;
     renderQuad->w = fontSurface->w;
     renderQuad->h = fontSurface->h;
     debugOption->renderQuad = renderQuad;
+    if (debugOption->index == selectedOption) {
+        SDL_SetTextureColorMod(debugOption->sdlTexture->texture, selectedFontColor.r, selectedFontColor.g, selectedFontColor.b);
+    } else {
+        SDL_SetTextureColorMod(debugOption->sdlTexture->texture, fontColor.r, fontColor.g, fontColor.b);
+    }
+
     SDL_FreeSurface(fontSurface);
     return true;
 }
@@ -227,21 +220,42 @@ void handleMainWindowKeyPress(SDL_Keysym ks) {
 }
 
 void handleDebugWindowKeypress(SDL_Keysym ks) {
+    bool shifted = ks.mod == KMOD_LSHIFT ? true : false;
     switch (ks.sym) {
         case SDLK_UP:
             if (selectedOption - 1 >= 0) {
                 selectedOption--;
+                renderFontForDebugOption(&debugOptions[selectedOption]);
+                renderFontForDebugOption(&debugOptions[selectedOption + 1]);
             }
             break;
         case SDLK_DOWN:
             if (selectedOption + 1 < DEBUG_OPTIONS_COUNT) {
                 selectedOption++;
+                renderFontForDebugOption(&debugOptions[selectedOption]);
+                renderFontForDebugOption(&debugOptions[selectedOption - 1]);
             }
             break;
-        // case SDLK_LEFT:
-        //     break;
-        // case SDLK_RIGHT:
-        //     break;
+        case SDLK_LEFT:
+            if (debugOptions->value - 1 > 0) {
+                if (shifted) {
+                    debugOptions[selectedOption].value -= 5;
+                } else {
+                    debugOptions[selectedOption].value -= 1;
+                }
+                renderFontForDebugOption(&debugOptions[selectedOption]);
+            }
+            break;
+        case SDLK_RIGHT:
+            if (debugOptions->value + 1 < 100) {
+                if (shifted) {
+                    debugOptions[selectedOption].value += 5;
+                } else {
+                    debugOptions[selectedOption].value += 1;
+                }
+                renderFontForDebugOption(&debugOptions[selectedOption]);
+            }
+            break;
         default:
             break;
     }
@@ -259,7 +273,7 @@ int main(int argc, char *argv[]) {
     }
 
     for (int i = 0; i < DEBUG_OPTIONS_COUNT; i++) {
-        renderFontForDebugOption(&debugOptions[i], i);
+        renderFontForDebugOption(&debugOptions[i]);
     }
 
     while (!quit) {
@@ -292,8 +306,9 @@ int main(int argc, char *argv[]) {
         if (dRenderer != NULL) {
             SDL_SetRenderDrawColor(dRenderer, 33,33,33,255);
             SDL_RenderClear(dRenderer);
-            SDL_RenderCopy(dRenderer, debugOptions[0].sdlTexture->texture, NULL, debugOptions[0].renderQuad);
-            SDL_RenderCopy(dRenderer, debugOptions[1].sdlTexture->texture, NULL, debugOptions[1].renderQuad);
+            for (int i = 0; i < DEBUG_OPTIONS_COUNT; i++) {
+                SDL_RenderCopy(dRenderer, debugOptions[i].sdlTexture->texture, NULL, debugOptions[i].renderQuad);
+            }
             SDL_RenderPresent(dRenderer);
         }
         //wait
