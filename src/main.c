@@ -237,24 +237,28 @@ void handleDebugWindowKeypress(SDL_Keysym ks) {
             }
             break;
         case SDLK_LEFT:
-            if (debugOptions->value - 1 > 0) {
-                if (shifted) {
+            if (shifted) {
+                if (debugOptions[selectedOption].value - 5 > 0) {
                     debugOptions[selectedOption].value -= 5;
                 } else {
-                    debugOptions[selectedOption].value -= 1;
+                    debugOptions[selectedOption].value = 0;
                 }
-                renderFontForDebugOption(&debugOptions[selectedOption]);
+            } else if (debugOptions[selectedOption].value - 1 >= 0) {
+                debugOptions[selectedOption].value--;
             }
+            renderFontForDebugOption(&debugOptions[selectedOption]);
             break;
         case SDLK_RIGHT:
-            if (debugOptions->value + 1 < 100) {
-                if (shifted) {
+            if (shifted) {
+                if (debugOptions[selectedOption].value + 5 < 99) {
                     debugOptions[selectedOption].value += 5;
                 } else {
-                    debugOptions[selectedOption].value += 1;
+                    debugOptions[selectedOption].value = 99;
                 }
-                renderFontForDebugOption(&debugOptions[selectedOption]);
+            } else if (debugOptions[selectedOption].value + 1 <= 99) {
+                debugOptions[selectedOption].value++;
             }
+            renderFontForDebugOption(&debugOptions[selectedOption]);
             break;
         default:
             break;
