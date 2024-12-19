@@ -8,7 +8,7 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 480;
 const int DEBUG_WIDTH = 480;
 const int DEBUG_HEIGHT = 600;
-const int FRAME_RATE = 12;
+const int FRAME_RATE = 16;
 const int TICKS_PER_FRAME = 1000 / FRAME_RATE;
 const int FONT_RESOLUTION = 8;
 const int FONT_SCALE = 2;
@@ -20,7 +20,6 @@ const int DEBUG_OPTIONS_COUNT = 3;
 
 const SDL_Color fontColor = {255, 172, 28, 255};
 const SDL_Color selectedFontColor = {130, 233, 211, 255};
-const SDL_Color bgColor = {126,47,8, 255};
 
 typedef struct LTimer {
     bool started;
@@ -28,7 +27,7 @@ typedef struct LTimer {
 } LTimer;
 
 typedef struct LTexture {
-    SDL_Texture* texture;
+    SDL_Texture* sdlTexture;
     int w;
     int h;
 } LTexture;
@@ -37,7 +36,9 @@ typedef struct LDebugOption {
     const char* description;
     int value;
     int index;
-    LTexture* sdlTexture;
+    int min;
+    int max;
+    LTexture* lTexture;
     SDL_Rect* renderQuad;
 } LDebugOption;
 
@@ -51,9 +52,9 @@ int linePos = 0;
 char lineBuffer[LINE_BUFFER_SIZE];
 int selectedOption = 0;
 LDebugOption debugOptions[DEBUG_OPTIONS_COUNT] = {
-    {"value 1", 23, 0},
-    {"value 2", 9, 1},
-    {"value 3", 4, 2}
+    {"r", 120, 0, 0, 255},
+    {"g", 80, 1, 0, 255},
+    {"b", 7, 2, 0, 255}
 };
 
 void startTimer(LTimer* t) {
@@ -73,8 +74,8 @@ bool loadFontSprite() {
     }
     SDL_SetColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, 0, 255 , 255));
 
-    gFontSprite.texture = SDL_CreateTextureFromSurface(gRenderer, surface);
-    if (gFontSprite.texture == NULL) {
+    gFontSprite.sdlTexture = SDL_CreateTextureFromSurface(gRenderer, surface);
+    if (gFontSprite.sdlTexture == NULL) {
         SDL_Log("Failed to render text texture from surface!\nSDL_Error: %s", SDL_GetError());
         return false;
     }
@@ -99,34 +100,41 @@ char* formatDebugFont(const LDebugOption debugOption) {
     return r;
 }
 
+SDL_Rect* getRenderQuad(const int x, const int y, const int w, const int h) {
+    SDL_Rect* rq = malloc(sizeof(SDL_Rect));
+    rq->x = x;
+    rq->y = y;
+    rq->w = w;
+    rq->h = h;
+    return rq;
+}
+
+LTexture* createTextureFromSurface(SDL_Renderer* renderer, SDL_Surface* surface) {
+    LTexture* lTexture = malloc(sizeof(LTexture));
+    lTexture->sdlTexture = malloc(sizeof(SDL_Texture*));
+    lTexture->sdlTexture = SDL_CreateTextureFromSurface(renderer, surface);
+    lTexture->w = surface->w;
+    lTexture->h = surface->h;
+    if (lTexture->sdlTexture == NULL) {
+        SDL_Log("TTF failed to render texture from surface!\nSDL_Error: %s", SDL_GetError());
+        return NULL;
+    }
+    return lTexture;
+}
+
 bool renderFontForDebugOption(LDebugOption* debugOption) {
+    free(debugOption->lTexture);
+    free(debugOption->renderQuad);
     SDL_Surface* fontSurface = TTF_RenderText_Solid(dFont, formatDebugFont(*debugOption), fontColor);
     if (fontSurface == NULL) {
         SDL_Log("TTF failed to render text to surface!\nSDL_Error: %s", SDL_GetError());
         return false;
     }
-    free(debugOption->sdlTexture);
-    free(debugOption->renderQuad);
-    debugOption->sdlTexture = malloc(sizeof(SDL_Texture*));
-    debugOption->sdlTexture->texture = SDL_CreateTextureFromSurface(dRenderer, fontSurface);
-    if (debugOption->sdlTexture == NULL) {
-        SDL_Log("TTF failed to render texture from surface!\nSDL_Error: %s", SDL_GetError());
-        return false;
-    }
-    debugOption->sdlTexture->w = fontSurface->w;
-    debugOption->sdlTexture->h = fontSurface->h;
-    SDL_Rect* renderQuad = malloc(sizeof(SDL_Rect*));
-    renderQuad->x = 0;
-    renderQuad->y = DEBUG_LINE_SPACE * debugOption->index;
-    renderQuad->w = fontSurface->w;
-    renderQuad->h = fontSurface->h;
-    debugOption->renderQuad = renderQuad;
-    if (debugOption->index == selectedOption) {
-        SDL_SetTextureColorMod(debugOption->sdlTexture->texture, selectedFontColor.r, selectedFontColor.g, selectedFontColor.b);
-    } else {
-        SDL_SetTextureColorMod(debugOption->sdlTexture->texture, fontColor.r, fontColor.g, fontColor.b);
-    }
 
+    debugOption->lTexture = createTextureFromSurface(dRenderer, fontSurface);
+    debugOption->renderQuad = getRenderQuad(0, DEBUG_LINE_SPACE * debugOption->index, fontSurface->w, fontSurface->h);
+    const SDL_Color color = debugOption->index == selectedOption ? selectedFontColor : fontColor;
+    SDL_SetTextureColorMod(debugOption->lTexture->sdlTexture, color.r, color.g, color.b);
     SDL_FreeSurface(fontSurface);
     return true;
 }
@@ -159,7 +167,7 @@ void renderText(const int x, const int y, const char* text) {
 
         clip.x = FONT_RESOLUTION * (offset % FONT_RESOLUTION);
         clip.y = FONT_RESOLUTION * (offset / FONT_RESOLUTION);
-        SDL_RenderCopy(gRenderer, gFontSprite.texture, &clip, &renderQuad);
+        SDL_RenderCopy(gRenderer, gFontSprite.sdlTexture, &clip, &renderQuad);
         renderQuad.x += FONT_SIZE;
     }
 }
@@ -238,24 +246,24 @@ void handleDebugWindowKeypress(SDL_Keysym ks) {
             break;
         case SDLK_LEFT:
             if (shifted) {
-                if (debugOptions[selectedOption].value - 5 > 0) {
+                if (debugOptions[selectedOption].value - 5 > debugOptions[selectedOption].min) {
                     debugOptions[selectedOption].value -= 5;
                 } else {
-                    debugOptions[selectedOption].value = 0;
+                    debugOptions[selectedOption].value = debugOptions[selectedOption].min;
                 }
-            } else if (debugOptions[selectedOption].value - 1 >= 0) {
+            } else if (debugOptions[selectedOption].value - 1 >= debugOptions[selectedOption].min) {
                 debugOptions[selectedOption].value--;
             }
             renderFontForDebugOption(&debugOptions[selectedOption]);
             break;
         case SDLK_RIGHT:
             if (shifted) {
-                if (debugOptions[selectedOption].value + 5 < 99) {
+                if (debugOptions[selectedOption].value + 5 < debugOptions[selectedOption].max) {
                     debugOptions[selectedOption].value += 5;
                 } else {
-                    debugOptions[selectedOption].value = 99;
+                    debugOptions[selectedOption].value = debugOptions[selectedOption].max;
                 }
-            } else if (debugOptions[selectedOption].value + 1 <= 99) {
+            } else if (debugOptions[selectedOption].value + 1 <= debugOptions[selectedOption].max) {
                 debugOptions[selectedOption].value++;
             }
             renderFontForDebugOption(&debugOptions[selectedOption]);
@@ -301,7 +309,7 @@ int main(int argc, char *argv[]) {
         }
 
         //main window
-        SDL_SetRenderDrawColor(gRenderer, bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+        SDL_SetRenderDrawColor(gRenderer, debugOptions[0].value, debugOptions[1].value, debugOptions[2].value, 255);
         SDL_RenderClear(gRenderer);
         renderText(0,1,lineBuffer);
         SDL_RenderPresent(gRenderer);
@@ -311,7 +319,7 @@ int main(int argc, char *argv[]) {
             SDL_SetRenderDrawColor(dRenderer, 33,33,33,255);
             SDL_RenderClear(dRenderer);
             for (int i = 0; i < DEBUG_OPTIONS_COUNT; i++) {
-                SDL_RenderCopy(dRenderer, debugOptions[i].sdlTexture->texture, NULL, debugOptions[i].renderQuad);
+                SDL_RenderCopy(dRenderer, debugOptions[i].lTexture->sdlTexture, NULL, debugOptions[i].renderQuad);
             }
             SDL_RenderPresent(dRenderer);
         }
