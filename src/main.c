@@ -194,8 +194,11 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    LTexture* d1 = getFontTexture("Debug first line");
-    LTexture* d2 = getFontTexture("Debug second line");
+    char s1[63]; char s2[63];
+    sprintf(s1, "Value 1: %4d", 23);
+    sprintf(s2, "Value 2: %4d", 4);
+    LTexture* d1 = getFontTexture(s1);
+    LTexture* d2 = getFontTexture(s2);
     SDL_Rect rq1 = {0, 0,d1->w,d1->h};
     SDL_Rect rq2 = {0, DEBUG_LINE_SPACE,d2->w,d2->h};
 
