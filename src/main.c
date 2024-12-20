@@ -11,12 +11,9 @@ const int DEBUG_HEIGHT = 600;
 const int FRAME_RATE = 16;
 const int TICKS_PER_FRAME = 1000 / FRAME_RATE;
 const int FONT_RESOLUTION = 8;
-const int FONT_SCALE = 2;
-const int FONT_SIZE = FONT_RESOLUTION * FONT_SCALE;
 const int LINE_SPACE = 8;
 const int DEBUG_LINE_SPACE = 16;
 const int LINE_BUFFER_SIZE = 255;
-const int DEBUG_OPTIONS_COUNT = 3;
 
 const SDL_Color fontColor = {255, 172, 28, 255};
 const SDL_Color selectedFontColor = {130, 233, 211, 255};
@@ -46,6 +43,8 @@ typedef enum DebugOption {
     DEBUG_BACKGROUND_COLOR_R,
     DEBUG_BACKGROUND_COLOR_G,
     DEBUG_BACKGROUND_COLOR_B,
+    DEBUG_FONT_SCALE,
+    DEBUG_PROPERTY_COUNT
 } DebugOption;
 
 SDL_Window* gWindow = NULL;
@@ -57,7 +56,7 @@ LTexture gFontSprite;
 int linePos = 0;
 char lineBuffer[LINE_BUFFER_SIZE];
 int selectedOption = 0;
-LDebugOption debugOptions[DEBUG_OPTIONS_COUNT];
+LDebugOption debugOptions[DEBUG_PROPERTY_COUNT];
 
 void startTimer(LTimer* t) {
     t->started = true;
@@ -77,6 +76,7 @@ bool loadFontSprite() {
     SDL_SetColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, 0, 255 , 255));
 
     gFontSprite.sdlTexture = SDL_CreateTextureFromSurface(gRenderer, surface);
+    SDL_SetTextureColorMod(gFontSprite.sdlTexture, fontColor.r, fontColor.g, fontColor.b);
     if (gFontSprite.sdlTexture == NULL) {
         SDL_Log("Failed to render text texture from surface!\nSDL_Error: %s", SDL_GetError());
         return false;
@@ -98,7 +98,7 @@ bool loadTTFs() {
 
 char* formatDebugFont(const LDebugOption debugOption) {
     char* r = malloc(sizeof(char) * 63);
-    sprintf(r, "%s:%4d", debugOption.description, debugOption.value);
+    sprintf(r, " %-12s: %-d", debugOption.description, debugOption.value);
     return r;
 }
 
@@ -160,9 +160,10 @@ void updDebug(const int index, const char* description, const int value, const i
 }
 
 void populateDebugOptions() {
-    updDebug(DEBUG_BACKGROUND_COLOR_R, "r", 120, 0, 255);
-    updDebug(DEBUG_BACKGROUND_COLOR_G, "g", 80, 0, 255);
-    updDebug(DEBUG_BACKGROUND_COLOR_B, "b", 7, 0, 255);
+    updDebug(DEBUG_BACKGROUND_COLOR_R, "r", 60, 0, 255);
+    updDebug(DEBUG_BACKGROUND_COLOR_G, "g", 25, 0, 255);
+    updDebug(DEBUG_BACKGROUND_COLOR_B, "b", 0, 0, 255);
+    updDebug(DEBUG_FONT_SCALE, "font scale", 2, 1, 9);
 }
 
 bool loadMedia() {
@@ -171,7 +172,8 @@ bool loadMedia() {
 }
 
 void renderText(const int x, const int y, const char* text) {
-    SDL_Rect renderQuad = {x, y, FONT_SIZE, FONT_SIZE};
+    const int fontSize = debugOptions[DEBUG_FONT_SCALE].value * FONT_RESOLUTION;
+    SDL_Rect renderQuad = {x, y, fontSize, fontSize};
     SDL_Rect clip = {0,0,FONT_RESOLUTION, FONT_RESOLUTION};
     for (int i = 0; i < strlen(text); i++) {
         char c = text[i];
@@ -186,7 +188,7 @@ void renderText(const int x, const int y, const char* text) {
             offset = 63;
         } else if (c == '\n') {
             renderQuad.x = 0;
-            renderQuad.y += FONT_SIZE + LINE_SPACE;
+            renderQuad.y += fontSize + LINE_SPACE;
             continue;
         } else {
             continue;
@@ -195,7 +197,7 @@ void renderText(const int x, const int y, const char* text) {
         clip.x = FONT_RESOLUTION * (offset % FONT_RESOLUTION);
         clip.y = FONT_RESOLUTION * (offset / FONT_RESOLUTION);
         SDL_RenderCopy(gRenderer, gFontSprite.sdlTexture, &clip, &renderQuad);
-        renderQuad.x += FONT_SIZE;
+        renderQuad.x += fontSize;
     }
 }
 
@@ -265,7 +267,7 @@ void handleDebugWindowKeypress(SDL_Keysym ks) {
             }
             break;
         case SDLK_DOWN:
-            if (selectedOption + 1 < DEBUG_OPTIONS_COUNT) {
+            if (selectedOption + 1 < DEBUG_PROPERTY_COUNT) {
                 selectedOption++;
                 renderFontForDebugOption(&debugOptions[selectedOption]);
                 renderFontForDebugOption(&debugOptions[selectedOption - 1]);
@@ -311,7 +313,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    for (int i = 0; i < DEBUG_OPTIONS_COUNT; i++) {
+    for (int i = 0; i < DEBUG_PROPERTY_COUNT; i++) {
         renderFontForDebugOption(&debugOptions[i]);
     }
 
@@ -345,7 +347,7 @@ int main(int argc, char *argv[]) {
         if (dRenderer != NULL) {
             SDL_SetRenderDrawColor(dRenderer, 33,33,33,255);
             SDL_RenderClear(dRenderer);
-            for (int i = 0; i < DEBUG_OPTIONS_COUNT; i++) {
+            for (int i = 0; i < DEBUG_PROPERTY_COUNT; i++) {
                 SDL_RenderCopy(dRenderer, debugOptions[i].lTexture->sdlTexture, NULL, debugOptions[i].renderQuad);
             }
             SDL_RenderPresent(dRenderer);
