@@ -47,14 +47,30 @@ typedef enum DebugOption {
     DEBUG_PROPERTY_COUNT
 } DebugOption;
 
+typedef enum MenuState {
+    MENU_WELCOME,
+    MENU_NAVIGATE,
+    MENU_ARTISTS,
+    MENU_PLAYLISTS,
+    MENU_SHUFFLE,
+    MENU_PROPERTY_COUNT
+} MenuState;
+char* menuTexts[] = {
+    "Welcome to miata\n\nPress any key to enter",
+    "1. Artists\n2. Playlists\n3. Shuffle All",
+    "0. Back\n1. Artist 1\n2. Artist 2\n",
+    "0. Back\n1. Playlist 1\n2. Playlist 2\n",
+    "0. Back\n1. Reshuffle 1\n",
+};
+
 SDL_Window* gWindow = NULL;
 SDL_Window* dWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 SDL_Renderer* dRenderer = NULL;
 TTF_Font* dFont = NULL;
 LTexture gFontSprite;
+MenuState menuState = MENU_WELCOME;
 int linePos = 0;
-char lineBuffer[LINE_BUFFER_SIZE];
 int selectedOption = 0;
 LDebugOption debugOptions[DEBUG_PROPERTY_COUNT];
 
@@ -163,7 +179,7 @@ void populateDebugOptions() {
     updDebug(DEBUG_BACKGROUND_COLOR_R, "r", 60, 0, 255);
     updDebug(DEBUG_BACKGROUND_COLOR_G, "g", 25, 0, 255);
     updDebug(DEBUG_BACKGROUND_COLOR_B, "b", 0, 0, 255);
-    updDebug(DEBUG_FONT_SCALE, "font scale", 2, 1, 9);
+    updDebug(DEBUG_FONT_SCALE, "font scale", 3, 1, 9);
 }
 
 bool loadMedia() {
@@ -246,13 +262,84 @@ void cleanup() {
     SDL_Quit();
 }
 
-void handleMainWindowKeyPress(SDL_Keysym ks) {
-    if (ks.sym >= SDLK_a && ks.sym <= SDLK_z || ks.sym >= SDLK_0 && ks.sym <= SDLK_9 || ks.sym == SDLK_SPACE) {
-        lineBuffer[linePos++] = ks.sym;
-    } else if (ks.sym == SDLK_BACKSPACE) {
-        lineBuffer[--linePos] = '\0';
-    } else if (ks.sym == SDLK_RETURN) {
-        lineBuffer[linePos++] = '\n';
+// void handleMainMenuTypingInput(const SDL_Keysym ks) {
+//     if (ks.sym >= SDLK_a && ks.sym <= SDLK_z || ks.sym >= SDLK_0 && ks.sym <= SDLK_9 || ks.sym == SDLK_SPACE) {
+//         displayText[linePos++] = ks.sym;
+//     } else if (ks.sym == SDLK_BACKSPACE) {
+//         displayText[--linePos] = '\0';
+//     } else if (ks.sym == SDLK_RETURN) {
+//         displayText[linePos++] = '\n';
+//     }
+// }
+
+void handleMenuNavigate(const SDL_Keysym ks) {
+    switch (ks.sym) {
+        case SDLK_1:
+            menuState = MENU_ARTISTS;
+            break;
+        case SDLK_2:
+            menuState = MENU_PLAYLISTS;
+            break;
+        case SDLK_3:
+            menuState = MENU_SHUFFLE;
+            break;
+        default:
+            break;
+    }
+}
+
+void handleMenuArtists(const SDL_Keysym ks) {
+    switch (ks.sym) {
+        case SDLK_0:
+            menuState = MENU_NAVIGATE;
+            break;
+        default:
+            break;
+    }
+}
+
+void handleMenuPlaylists(const SDL_Keysym ks) {
+    switch (ks.sym) {
+        case SDLK_0:
+            menuState = MENU_NAVIGATE;
+        break;
+        default:
+            break;
+    }
+}
+
+void handleMenuShuffle(const SDL_Keysym ks) {
+    switch (ks.sym) {
+        case SDLK_0:
+            menuState = MENU_NAVIGATE;
+        break;
+        default:
+            break;
+    }
+}
+
+void handleMainWindowMenuNav(const SDL_Keysym ks) {
+    if (ks.sym == SDLK_BACKSPACE) {
+        menuState = MENU_WELCOME;
+    }
+    switch (menuState) {
+        case MENU_WELCOME:
+            menuState = MENU_NAVIGATE;
+            break;
+        case MENU_NAVIGATE:
+            handleMenuNavigate(ks);
+            break;
+        case MENU_ARTISTS:
+            handleMenuArtists(ks);
+            break;
+        case MENU_PLAYLISTS:
+            handleMenuPlaylists(ks);
+            break;
+        case MENU_SHUFFLE:
+            handleMenuShuffle(ks);
+            break;
+        default:
+            break;
     }
 }
 
@@ -329,7 +416,7 @@ int main(int argc, char *argv[]) {
             }
             if (e.type == SDL_KEYDOWN) {
                 if (e.window.windowID == SDL_GetWindowID(gWindow)) {
-                    handleMainWindowKeyPress(e.key.keysym);
+                    handleMainWindowMenuNav(e.key.keysym);
                 } else if (e.window.windowID == SDL_GetWindowID(dWindow)) {
                     handleDebugWindowKeypress(e.key.keysym);
                 }
@@ -340,7 +427,7 @@ int main(int argc, char *argv[]) {
         //main window
         SDL_SetRenderDrawColor(gRenderer, debugOptions[0].value, debugOptions[1].value, debugOptions[2].value, 255);
         SDL_RenderClear(gRenderer);
-        renderText(0,1,lineBuffer);
+        renderText(0,1,menuTexts[menuState]);
         SDL_RenderPresent(gRenderer);
 
         //debug window
