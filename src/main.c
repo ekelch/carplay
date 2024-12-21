@@ -4,32 +4,29 @@
 #include "stdbool.h"
 
 const bool DEBUG_WINDOW = true;
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 480;
+const int SCREEN_WIDTH = 320;
+const int SCREEN_HEIGHT = 240;
 const int DEBUG_WIDTH = 480;
 const int DEBUG_HEIGHT = 600;
 const int FRAME_RATE = 16;
 const int TICKS_PER_FRAME = 1000 / FRAME_RATE;
-const int FONT_RESOLUTION = 8;
-const int LINE_SPACE = 8;
-const int DEBUG_LINE_SPACE = 16;
-const int LINE_BUFFER_SIZE = 255;
+const int LINE_SPACE = 16;
+const int MAP_CAPACITY = 100;
 
 const SDL_Color fontColor = {255, 172, 28, 255};
 const SDL_Color selectedFontColor = {130, 233, 211, 255};
 
-typedef struct LTimer {
+typedef struct {
     bool started;
     Uint64 startTicks;
 } LTimer;
 
-typedef struct LTexture {
+typedef struct {
     SDL_Texture* sdlTexture;
-    int w;
-    int h;
+    SDL_Rect renderQuad;
 } LTexture;
 
-typedef struct LDebugOption {
+typedef struct {
     const char* description;
     int value;
     int index;
@@ -39,7 +36,7 @@ typedef struct LDebugOption {
     SDL_Rect* renderQuad;
 } LDebugOption;
 
-typedef enum DebugOption {
+typedef enum {
     DEBUG_BACKGROUND_COLOR_R,
     DEBUG_BACKGROUND_COLOR_G,
     DEBUG_BACKGROUND_COLOR_B,
@@ -47,20 +44,19 @@ typedef enum DebugOption {
     DEBUG_PROPERTY_COUNT
 } DebugOption;
 
-typedef enum MenuState {
+typedef enum {
     MENU_WELCOME,
     MENU_NAVIGATE,
     MENU_ARTISTS,
     MENU_PLAYLISTS,
-    MENU_SHUFFLE,
     MENU_PROPERTY_COUNT
 } MenuState;
+
 char* menuTexts[] = {
-    "Welcome to miata\n\nPress any key to enter",
-    "1. Artists\n2. Playlists\n3. Shuffle All",
+    "Welcome\n\nPress any key to enter",
+    "1. Artists\n2. Playlists\n",
     "0. Back\n1. Artist 1\n2. Artist 2\n",
     "0. Back\n1. Playlist 1\n2. Playlist 2\n",
-    "0. Back\n1. Reshuffle 1\n",
 };
 
 SDL_Window* gWindow = NULL;
@@ -68,7 +64,6 @@ SDL_Window* dWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 SDL_Renderer* dRenderer = NULL;
 TTF_Font* dFont = NULL;
-LTexture gFontSprite;
 MenuState menuState = MENU_WELCOME;
 int linePos = 0;
 int selectedOption = 0;
@@ -83,31 +78,66 @@ void stopTimer(LTimer* t) {
     t->startTicks = 0;
 }
 
-bool loadFontSprite() {
-    SDL_Surface* surface = IMG_Load("./resources/evanFont2.png");
-    if (surface == NULL) {
-        SDL_Log("Failed to create text surface from png!\nSDL_Error: %s", SDL_GetError());
-        return false;
-    }
-    SDL_SetColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, 0, 255 , 255));
-
-    gFontSprite.sdlTexture = SDL_CreateTextureFromSurface(gRenderer, surface);
-    SDL_SetTextureColorMod(gFontSprite.sdlTexture, fontColor.r, fontColor.g, fontColor.b);
-    if (gFontSprite.sdlTexture == NULL) {
-        SDL_Log("Failed to render text texture from surface!\nSDL_Error: %s", SDL_GetError());
-        return false;
-    }
-    gFontSprite.w = surface->w;
-    gFontSprite.h = surface->h;
-    SDL_FreeSurface(surface);
-    return true;
-}
-
 bool loadTTFs() {
     dFont = TTF_OpenFont("./resources/fira.ttf", 16);
     if (dFont == NULL) {
         SDL_Log("Failed to open TTF font!\nSDL_Error: %s", SDL_GetError());
         return false;
+    }
+    return true;
+}
+
+
+typedef struct {
+    char key;
+    LTexture texture;
+} TextureMapKVPair;
+
+typedef struct {
+    int size;
+    TextureMapKVPair* pairs[MAP_CAPACITY];
+} LTextureMap;
+
+LTextureMap textureMap = { .pairs = 0 };
+
+void add_to_texture_map(const char key, const LTexture value) {
+    if (textureMap.size >= MAP_CAPACITY) {
+        printf("map is full, cannot add key:%c", key);
+        return;
+    }
+    TextureMapKVPair* entry = malloc(sizeof(TextureMapKVPair));
+    entry->key = key;
+    entry->texture = value;
+    textureMap.pairs[textureMap.size] = entry;
+    textureMap.size++;
+}
+
+LTexture get_from_texture_map(const char key) {
+    for (int i = 0; i < textureMap.size; i++) {
+        if (key == textureMap.pairs[i]->key) {
+            return textureMap.pairs[i]->texture;
+        }
+    }
+    printf("failed to find texture in map: %c", key);
+    exit(1);
+}
+
+bool loadFontTextureMap() {
+    const char* chars = " qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890!@#$%^&*()_+-=,./;'[]{}";
+    for (int i = 0; i < strlen(chars); i++) {
+        SDL_Surface* surface = TTF_RenderGlyph_Solid(dFont, chars[i], fontColor);
+        if (surface == NULL) {
+            printf("Failed to surface %d", chars[i]);
+            return false;
+        }
+        SDL_Texture* sdlTexture = SDL_CreateTextureFromSurface(gRenderer, surface);
+        if (sdlTexture == NULL) {
+            printf("Failed to texture %d", chars[i]);
+            return false;
+        }
+        SDL_Rect renderQuad = {0,0,surface->w, surface->h};
+        LTexture lTexture = {sdlTexture, renderQuad};
+        add_to_texture_map(chars[i], lTexture);
     }
     return true;
 }
@@ -131,12 +161,12 @@ LTexture* createTextureFromSurface(SDL_Renderer* renderer, SDL_Surface* surface)
     LTexture* lTexture = malloc(sizeof(LTexture));
     lTexture->sdlTexture = malloc(sizeof(SDL_Texture*));
     lTexture->sdlTexture = SDL_CreateTextureFromSurface(renderer, surface);
-    lTexture->w = surface->w;
-    lTexture->h = surface->h;
     if (lTexture->sdlTexture == NULL) {
         SDL_Log("TTF failed to render texture from surface!\nSDL_Error: %s", SDL_GetError());
         return NULL;
     }
+    const SDL_Rect renderQuad = {0,0,surface->w, surface->h};
+    lTexture->renderQuad = renderQuad;
     return lTexture;
 }
 
@@ -150,7 +180,7 @@ bool renderFontForDebugOption(LDebugOption* debugOption) {
     }
 
     debugOption->lTexture = createTextureFromSurface(dRenderer, fontSurface);
-    debugOption->renderQuad = getRenderQuad(0, DEBUG_LINE_SPACE * debugOption->index, fontSurface->w, fontSurface->h);
+    debugOption->renderQuad = getRenderQuad(0, LINE_SPACE * debugOption->index, fontSurface->w, fontSurface->h);
     const SDL_Color color = debugOption->index == selectedOption ? selectedFontColor : fontColor;
     SDL_SetTextureColorMod(debugOption->lTexture->sdlTexture, color.r, color.g, color.b);
     SDL_FreeSurface(fontSurface);
@@ -184,36 +214,22 @@ void populateDebugOptions() {
 
 bool loadMedia() {
     populateDebugOptions();
-    return loadFontSprite() && loadTTFs();
+    return loadTTFs() && loadFontTextureMap();
 }
 
 void renderText(const int x, const int y, const char* text) {
-    const int fontSize = debugOptions[DEBUG_FONT_SCALE].value * FONT_RESOLUTION;
-    SDL_Rect renderQuad = {x, y, fontSize, fontSize};
-    SDL_Rect clip = {0,0,FONT_RESOLUTION, FONT_RESOLUTION};
+    SDL_Rect renderQuad = {x,y,0,0};
     for (int i = 0; i < strlen(text); i++) {
-        char c = text[i];
-        int offset = 0;
-        if (c >= 'A' && c <= 'Z') {
-            offset = c - 'A';
-        } else if (c >= 'a' && c <= 'z') {
-            offset = c - 'a';
-        } else if (c >= '0' && c <= '9') {
-            offset = c - '0' + 26;
-        } else if (c == ' ') {
-            offset = 63;
-        } else if (c == '\n') {
-            renderQuad.x = 0;
-            renderQuad.y += fontSize + LINE_SPACE;
-            continue;
+        if (text[i] == '\n') {
+            renderQuad.x = x;
+            renderQuad.y += LINE_SPACE;
         } else {
-            continue;
+            LTexture lTexture = get_from_texture_map(text[i]);
+            renderQuad.w = lTexture.renderQuad.w;
+            renderQuad.h = lTexture.renderQuad.h;
+            SDL_RenderCopy(gRenderer, lTexture.sdlTexture, NULL, &renderQuad);
+            renderQuad.x += lTexture.renderQuad.w;
         }
-
-        clip.x = FONT_RESOLUTION * (offset % FONT_RESOLUTION);
-        clip.y = FONT_RESOLUTION * (offset / FONT_RESOLUTION);
-        SDL_RenderCopy(gRenderer, gFontSprite.sdlTexture, &clip, &renderQuad);
-        renderQuad.x += fontSize;
     }
 }
 
@@ -262,59 +278,30 @@ void cleanup() {
     SDL_Quit();
 }
 
-// void handleMainMenuTypingInput(const SDL_Keysym ks) {
-//     if (ks.sym >= SDLK_a && ks.sym <= SDLK_z || ks.sym >= SDLK_0 && ks.sym <= SDLK_9 || ks.sym == SDLK_SPACE) {
-//         displayText[linePos++] = ks.sym;
-//     } else if (ks.sym == SDLK_BACKSPACE) {
-//         displayText[--linePos] = '\0';
-//     } else if (ks.sym == SDLK_RETURN) {
-//         displayText[linePos++] = '\n';
-//     }
-// }
-
 void handleMenuNavigate(const SDL_Keysym ks) {
-    switch (ks.sym) {
-        case SDLK_1:
-            menuState = MENU_ARTISTS;
-            break;
-        case SDLK_2:
-            menuState = MENU_PLAYLISTS;
-            break;
-        case SDLK_3:
-            menuState = MENU_SHUFFLE;
-            break;
-        default:
-            break;
+    const int s = ks.sym;
+    if (s == SDLK_1 || s == SDLK_KP_1) {
+        menuState = MENU_ARTISTS;
+    } else if (s == SDLK_2 || s == SDLK_KP_2) {
+        menuState = MENU_PLAYLISTS;
     }
 }
 
 void handleMenuArtists(const SDL_Keysym ks) {
-    switch (ks.sym) {
-        case SDLK_0:
-            menuState = MENU_NAVIGATE;
-            break;
-        default:
-            break;
+    const int s = ks.sym;
+    if (s == SDLK_0 || s == SDLK_KP_0) {
+        menuState = MENU_NAVIGATE;
+    // } else if (s == SDLK_2 || s == SDLK_KP_2) {
+    //     menuState = MENU_PLAYLISTS;
+    // } else if (s == SDLK_3 || s == SDLK_KP_3) {
+    //     menuState = MENU_SHUFFLE;
     }
 }
 
 void handleMenuPlaylists(const SDL_Keysym ks) {
-    switch (ks.sym) {
-        case SDLK_0:
-            menuState = MENU_NAVIGATE;
-        break;
-        default:
-            break;
-    }
-}
-
-void handleMenuShuffle(const SDL_Keysym ks) {
-    switch (ks.sym) {
-        case SDLK_0:
-            menuState = MENU_NAVIGATE;
-        break;
-        default:
-            break;
+    const int s = ks.sym;
+    if (s == SDLK_0 || s == SDLK_KP_0) {
+        menuState = MENU_NAVIGATE;
     }
 }
 
@@ -322,24 +309,14 @@ void handleMainWindowMenuNav(const SDL_Keysym ks) {
     if (ks.sym == SDLK_BACKSPACE) {
         menuState = MENU_WELCOME;
     }
-    switch (menuState) {
-        case MENU_WELCOME:
-            menuState = MENU_NAVIGATE;
-            break;
-        case MENU_NAVIGATE:
-            handleMenuNavigate(ks);
-            break;
-        case MENU_ARTISTS:
-            handleMenuArtists(ks);
-            break;
-        case MENU_PLAYLISTS:
-            handleMenuPlaylists(ks);
-            break;
-        case MENU_SHUFFLE:
-            handleMenuShuffle(ks);
-            break;
-        default:
-            break;
+    if (menuState == MENU_WELCOME) {
+        menuState = MENU_NAVIGATE;
+    } else if (menuState == MENU_NAVIGATE) {
+        handleMenuNavigate(ks);
+    } else if (menuState == MENU_ARTISTS) {
+        handleMenuArtists(ks);
+    } else if (menuState == MENU_PLAYLISTS) {
+        handleMenuPlaylists(ks);
     }
 }
 
