@@ -321,48 +321,43 @@ void handleMainWindowMenuNav(const SDL_Keysym ks) {
 }
 
 void handleDebugWindowKeypress(SDL_Keysym ks) {
+    const int sym = ks.sym;
     bool shifted = ks.mod == KMOD_LSHIFT ? true : false;
-    switch (ks.sym) {
-        case SDLK_UP:
-            if (selectedOption - 1 >= 0) {
-                selectedOption--;
-                renderFontForDebugOption(&debugOptions[selectedOption]);
-                renderFontForDebugOption(&debugOptions[selectedOption + 1]);
-            }
-            break;
-        case SDLK_DOWN:
-            if (selectedOption + 1 < DEBUG_PROPERTY_COUNT) {
-                selectedOption++;
-                renderFontForDebugOption(&debugOptions[selectedOption]);
-                renderFontForDebugOption(&debugOptions[selectedOption - 1]);
-            }
-            break;
-        case SDLK_LEFT:
-            if (shifted) {
-                if (debugOptions[selectedOption].value - 5 > debugOptions[selectedOption].min) {
-                    debugOptions[selectedOption].value -= 5;
-                } else {
-                    debugOptions[selectedOption].value = debugOptions[selectedOption].min;
-                }
-            } else if (debugOptions[selectedOption].value - 1 >= debugOptions[selectedOption].min) {
-                debugOptions[selectedOption].value--;
-            }
+
+    if (sym == SDLK_UP || sym == SDLK_KP_8) {
+        if (selectedOption - 1 >= 0) {
+            selectedOption--;
             renderFontForDebugOption(&debugOptions[selectedOption]);
-            break;
-        case SDLK_RIGHT:
-            if (shifted) {
-                if (debugOptions[selectedOption].value + 5 < debugOptions[selectedOption].max) {
-                    debugOptions[selectedOption].value += 5;
-                } else {
-                    debugOptions[selectedOption].value = debugOptions[selectedOption].max;
-                }
-            } else if (debugOptions[selectedOption].value + 1 <= debugOptions[selectedOption].max) {
-                debugOptions[selectedOption].value++;
-            }
+            renderFontForDebugOption(&debugOptions[selectedOption + 1]);
+        }
+    } else if (sym == SDLK_DOWN || sym == SDLK_KP_5) {
+        if (selectedOption + 1 < DEBUG_PROPERTY_COUNT) {
+            selectedOption++;
             renderFontForDebugOption(&debugOptions[selectedOption]);
-            break;
-        default:
-            break;
+            renderFontForDebugOption(&debugOptions[selectedOption - 1]);
+        }
+    } else if (sym == SDLK_LEFT || sym == SDLK_KP_4) {
+        if (shifted) {
+            if (debugOptions[selectedOption].value - 5 > debugOptions[selectedOption].min) {
+                debugOptions[selectedOption].value -= 5;
+            } else {
+                debugOptions[selectedOption].value = debugOptions[selectedOption].min;
+            }
+        } else if (debugOptions[selectedOption].value - 1 >= debugOptions[selectedOption].min) {
+            debugOptions[selectedOption].value--;
+        }
+        renderFontForDebugOption(&debugOptions[selectedOption]);
+    } else if (sym == SDLK_RIGHT || sym == SDLK_KP_6) {
+        if (shifted) {
+            if (debugOptions[selectedOption].value + 5 < debugOptions[selectedOption].max) {
+                debugOptions[selectedOption].value += 5;
+            } else {
+                debugOptions[selectedOption].value = debugOptions[selectedOption].max;
+            }
+        } else if (debugOptions[selectedOption].value + 1 <= debugOptions[selectedOption].max) {
+            debugOptions[selectedOption].value++;
+        }
+        renderFontForDebugOption(&debugOptions[selectedOption]);
     }
 
 }
