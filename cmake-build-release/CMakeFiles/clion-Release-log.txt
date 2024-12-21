@@ -1,6 +1,6 @@
-"/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/bin/cmake" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=/Users/evankelch/Applications/CLion Nova.app/Contents/bin/ninja/mac/aarch64/ninja" -G Ninja -S /Users/evankelch/CLionProjects/carplay -B /Users/evankelch/CLionProjects/carplay/cmake-build-debug
+"/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/bin/cmake" -DCMAKE_BUILD_TYPE=Release "-DCMAKE_MAKE_PROGRAM=/Users/evankelch/Applications/CLion Nova.app/Contents/bin/ninja/mac/aarch64/ninja" -G Ninja -S /Users/evankelch/CLionProjects/carplay -B /Users/evankelch/CLionProjects/carplay/cmake-build-release
 
--- CMAKE_BINARY_DIR: /Users/evankelch/CLionProjects/carplay/cmake-build-debug
+-- CMAKE_BINARY_DIR: /Users/evankelch/CLionProjects/carplay/cmake-build-release
 -- CMAKE_SOURCE_DIR: /Users/evankelch/CLionProjects/carplay
 -- CMAKE_COMMAND: /Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/bin/cmake
 -- CMAKE_VERSION: 3.30.5
@@ -30,4 +30,4 @@
 
 -- Configuring done (0.0s)
 -- Generating done (0.0s)
--- Build files have been written to: /Users/evankelch/CLionProjects/carplay/cmake-build-debug
+-- Build files have been written to: /Users/evankelch/CLionProjects/carplay/cmake-build-release

@@ -1,11 +1,12 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 #include "stdbool.h"
 
 const bool DEBUG_WINDOW = true;
-const int SCREEN_WIDTH = 320;
-const int SCREEN_HEIGHT = 240;
+const int SCREEN_WIDTH = 800;
+const int SCREEN_HEIGHT = 480;
 const int DEBUG_WIDTH = 480;
 const int DEBUG_HEIGHT = 600;
 const int FRAME_RATE = 16;
@@ -55,7 +56,7 @@ typedef enum {
 char* menuTexts[] = {
     "Welcome\n\nPress any key to enter",
     "1. Artists\n2. Playlists\n",
-    "0. Back\n1. Artist 1\n2. Artist 2\n",
+    "0. Back\n1. Nikitata\n2. Bladee\n",
     "0. Back\n1. Playlist 1\n2. Playlist 2\n",
 };
 
@@ -65,6 +66,7 @@ SDL_Renderer* gRenderer = NULL;
 SDL_Renderer* dRenderer = NULL;
 TTF_Font* dFont = NULL;
 MenuState menuState = MENU_WELCOME;
+Mix_Music* gMusic = NULL;
 int linePos = 0;
 int selectedOption = 0;
 LDebugOption debugOptions[DEBUG_PROPERTY_COUNT];
@@ -86,7 +88,6 @@ bool loadTTFs() {
     }
     return true;
 }
-
 
 typedef struct {
     char key;
@@ -233,8 +234,51 @@ void renderText(const int x, const int y, const char* text) {
     }
 }
 
+void playGSong() {
+    if (Mix_PlayingMusic() == 1) {
+        if (Mix_PausedMusic() == 1) {
+            Mix_ResumeMusic();
+        }
+    } else {
+        Mix_PlayMusic(gMusic, 0);
+    }
+}
+
+void pauseGSong() {
+    if (Mix_PlayingMusic() == 1) {
+        if (Mix_PausedMusic() != 1) {
+            Mix_PauseMusic();
+        }
+    }
+}
+
+bool playPauseCurrentSong() {
+    if (Mix_PlayingMusic() == 1) {
+        if (Mix_PausedMusic() == 1) {
+            Mix_ResumeMusic();
+        } else {
+            Mix_PauseMusic();
+        }
+    } else {
+        Mix_PlayMusic(gMusic, 0);
+    }
+    return Mix_PlayingMusic() == 1 && Mix_PausedMusic() == 1;
+}
+
+bool loadSong(int artist) {
+    pauseGSong();
+    Mix_FreeMusic(gMusic);
+    char* songFile = artist == 1 ? "./resources/nikitata.mp3" : "./resources/thingsHappen.mp3";
+    gMusic = Mix_LoadMUS(songFile);
+    if (gMusic == NULL) {
+        SDL_Log("Failed to play %s\nSDL_error: %s", songFile, SDL_GetError());
+        return false;
+    }
+    return true;
+}
+
 bool init() {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         SDL_Log("Failed to init SDL!\nSDL_Error: %s", SDL_GetError());
         return false;
     }
@@ -244,6 +288,11 @@ bool init() {
     }
     if (TTF_Init() == -1) {
         SDL_Log("SDL TTF could not init!\nSDL_Error: %s", SDL_GetError());
+        return false;
+    }
+
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        SDL_Log("SDL Mixer failed to init!\nSDL_Error: %s", SDL_GetError());
         return false;
     }
 
@@ -273,7 +322,7 @@ void cleanup() {
     destroyDebugWindow();
     SDL_DestroyRenderer(gRenderer);
     SDL_DestroyWindow(gWindow);
-
+    Mix_Quit();
     IMG_Quit();
     SDL_Quit();
 }
@@ -291,10 +340,12 @@ void handleMenuArtists(const SDL_Keysym ks) {
     const int s = ks.sym;
     if (s == SDLK_0 || s == SDLK_KP_0) {
         menuState = MENU_NAVIGATE;
-    // } else if (s == SDLK_2 || s == SDLK_KP_2) {
-    //     menuState = MENU_PLAYLISTS;
-    // } else if (s == SDLK_3 || s == SDLK_KP_3) {
-    //     menuState = MENU_SHUFFLE;
+    } else if (s == SDLK_1 || s == SDLK_KP_1) {
+        loadSong(1);
+        playGSong();
+    } else if (s == SDLK_2 || s == SDLK_KP_2) {
+        loadSong(2);
+        playGSong();
     }
 }
 
@@ -305,7 +356,16 @@ void handleMenuPlaylists(const SDL_Keysym ks) {
     }
 }
 
+void handlePlayPauseControls(SDL_Keysym ks) {
+    int sym = ks.sym;
+
+    if (sym == SDLK_ESCAPE) {
+        playPauseCurrentSong();
+    }
+}
+
 void handleMainWindowMenuNav(const SDL_Keysym ks) {
+    handlePlayPauseControls(ks);
     if (ks.sym == SDLK_BACKSPACE) {
         menuState = MENU_WELCOME;
     }
