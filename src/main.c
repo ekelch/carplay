@@ -18,7 +18,10 @@ const int FRAME_RATE = 16;
 const int TICKS_PER_FRAME = 1000 / FRAME_RATE;
 const int LINE_SPACE = 16;
 const int MAP_CAPACITY = 100;
-
+const int MAX_SONGS = 100;
+const char* songResDir = "/Users/evankelch/Library/Application Support/mp/resources";
+char* songs[MAX_SONGS];
+int songCount = 0;
 
 const SDL_Color fontColor = {255, 172, 28, 255};
 const SDL_Color selectedFontColor = {130, 233, 211, 255};
@@ -62,7 +65,7 @@ typedef enum {
 
 char* menuTexts[] = {
     "Welcome\n\nPress any key to enter",
-    "1. Artists\n2. Playlists\n",
+    "1. Artists\n2. Playlists\n3. All songs",
     "0. Back\n1. Nikitata\n2. Bladee\n",
     "0. Back\n1. Playlist 1\n2. Playlist 2\n",
 };
@@ -126,12 +129,12 @@ LTexture get_from_texture_map(const char key) {
             return textureMap.pairs[i]->texture;
         }
     }
-    printf("failed to find texture in map: %c", key);
-    exit(1);
+    printf("failed to find texture in map: \'%c\', returning empty space as placeholder.\n", key);
+    return textureMap.pairs[0]->texture;
 }
 
 bool loadFontTextureMap() {
-    const char* chars = " qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890!@#$%^&*()_+-=,./;'[]{}";
+    const char* chars = " qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890!@#$%^&*()_+-=,./:;'[]{}";
     for (int i = 0; i < strlen(chars); i++) {
         SDL_Surface* surface = TTF_RenderGlyph_Solid(dFont, chars[i], fontColor);
         if (surface == NULL) {
@@ -245,8 +248,7 @@ void listSongs() {
     char cwd[1024];
     getcwd(cwd, sizeof(cwd));
 
-    char* dirPath = "/Users/evankelch/Library/Application Support/mp/resources";
-    if (chdir(dirPath) == -1) {
+    if (chdir(songResDir) == -1) {
         printf("Failed to chdir, errno: %d\n", errno);
         exit(1);
     }
@@ -265,8 +267,8 @@ void listSongs() {
             printf("Unable to stat file: %s, errno: %d\n", entry->d_name, errno);
             exit(1);
         }
-        if (S_ISREG(filestat.st_mode)) {
-            printf("fileName: %s\n", entry->d_name);
+        if (S_ISREG(filestat.st_mode) && entry->d_name[0] != '.') {
+            songs[songCount++] = entry->d_name;
         }
     }
     closedir(dirp);
@@ -314,6 +316,19 @@ bool loadSong(int artist) {
     gMusic = Mix_LoadMUS(songFile);
     if (gMusic == NULL) {
         SDL_Log("Failed to play %s\nSDL_error: %s", songFile, SDL_GetError());
+        return false;
+    }
+    return true;
+}
+
+bool loadSongsAllSongs(int index) {
+    pauseGSong();
+    Mix_FreeMusic(gMusic);
+    char* filetoload = songResDir;
+    strcat(&filetoload, songs[index]);
+    gMusic = Mix_LoadMUS(filetoload);
+    if (gMusic == NULL) {
+        SDL_Log("Failed to play %s\nSDL_error: %s", filetoload, SDL_GetError());
         return false;
     }
     return true;
@@ -377,6 +392,8 @@ void handleMenuNavigate(const SDL_Keysym ks) {
         menuState = MENU_ARTISTS;
     } else if (s == SDLK_2 || s == SDLK_KP_2) {
         menuState = MENU_PLAYLISTS;
+    } else if (s == SDLK_3 || s == SDLK_KP_3) {
+        menuState = MENU_ALL_SONGS;
     }
 }
 
@@ -402,10 +419,14 @@ void handleMenuPlaylists(const SDL_Keysym ks) {
 
 void handlePlayPauseControls(SDL_Keysym ks) {
     int sym = ks.sym;
-
     if (sym == SDLK_ESCAPE) {
         playPauseCurrentSong();
     }
+}
+
+void handlePlayAllSong(SDL_Keysym ks) {
+    int index = ks.sym - SDLK_KP_0;
+    loadSongsAllSongs(index);
 }
 
 void handleMainWindowMenuNav(const SDL_Keysym ks) {
@@ -421,6 +442,8 @@ void handleMainWindowMenuNav(const SDL_Keysym ks) {
         handleMenuArtists(ks);
     } else if (menuState == MENU_PLAYLISTS) {
         handleMenuPlaylists(ks);
+    } else if (menuState == MENU_ALL_SONGS) {
+        handlePlayAllSong(ks);
     }
 }
 
@@ -466,13 +489,30 @@ void handleDebugWindowKeypress(SDL_Keysym ks) {
 
 }
 
+char* listSongString() {
+    char* rtext = malloc(sizeof(char) * 1024);
+    int p = 0;
+
+    for (int i = 0; i < songCount; i++) {
+        rtext[p++] = i + '1';
+        rtext[p++] = ' ';
+        for (int j = 0; j < strlen(songs[i]); j++) {
+            rtext[p++] = songs[i][j];
+        }
+        rtext[p++] = '\n';
+    }
+    rtext[p] = '\0';
+    return rtext;
+}
+
 void renderMain() {
     if (menuState == MENU_ALL_SONGS) {
-
+        char* rtext = listSongString();
+        renderText(0,0, rtext);
+        free(rtext);
     } else {
-        renderText(0,1,menuTexts[menuState]);
+        renderText(0,0,menuTexts[menuState]);
     }
-
 }
 
 int main(int argc, char *argv[]) {
