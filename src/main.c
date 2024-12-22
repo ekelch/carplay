@@ -2,6 +2,11 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
+#include <sys/errno.h>
+#include <unistd.h>
+
+#include "dirent.h"
+#include "sys/stat.h"
 #include "stdbool.h"
 
 const bool DEBUG_WINDOW = true;
@@ -13,6 +18,7 @@ const int FRAME_RATE = 16;
 const int TICKS_PER_FRAME = 1000 / FRAME_RATE;
 const int LINE_SPACE = 16;
 const int MAP_CAPACITY = 100;
+
 
 const SDL_Color fontColor = {255, 172, 28, 255};
 const SDL_Color selectedFontColor = {130, 233, 211, 255};
@@ -50,7 +56,8 @@ typedef enum {
     MENU_NAVIGATE,
     MENU_ARTISTS,
     MENU_PLAYLISTS,
-    MENU_PROPERTY_COUNT
+    MENU_STATIC_COUNT,
+    MENU_ALL_SONGS
 } MenuState;
 
 char* menuTexts[] = {
@@ -234,6 +241,41 @@ void renderText(const int x, const int y, const char* text) {
     }
 }
 
+void listSongs() {
+    char cwd[1024];
+    getcwd(cwd, sizeof(cwd));
+
+    char* dirPath = "/Users/evankelch/Library/Application Support/mp/resources";
+    if (chdir(dirPath) == -1) {
+        printf("Failed to chdir, errno: %d\n", errno);
+        exit(1);
+    }
+
+    DIR* dirp = opendir(".");
+    struct dirent* entry;
+    struct stat filestat;
+
+    if (dirp == NULL) {
+        printf("Unable to read dir\n");
+        exit(1);
+    }
+    while ((entry = readdir(dirp))) {
+        int res = stat(entry->d_name, &filestat);
+        if (res == -1) {
+            printf("Unable to stat file: %s, errno: %d\n", entry->d_name, errno);
+            exit(1);
+        }
+        if (S_ISREG(filestat.st_mode)) {
+            printf("fileName: %s\n", entry->d_name);
+        }
+    }
+    closedir(dirp);
+    if (chdir(cwd) == -1) {
+        printf("Failed to back to prev cwd, errno: %d\n", errno);
+        exit(1);
+    }
+}
+
 void playGSong() {
     if (Mix_PlayingMusic() == 1) {
         if (Mix_PausedMusic() == 1) {
@@ -268,7 +310,7 @@ bool playPauseCurrentSong() {
 bool loadSong(int artist) {
     pauseGSong();
     Mix_FreeMusic(gMusic);
-    char* songFile = artist == 1 ? "./resources/nikitata.mp3" : "./resources/thingsHappen.mp3";
+    char* songFile = artist == 1 ? "./resources/songs/nikitata.mp3" : "./resources/songs/thingsHappen.mp3";
     gMusic = Mix_LoadMUS(songFile);
     if (gMusic == NULL) {
         SDL_Log("Failed to play %s\nSDL_error: %s", songFile, SDL_GetError());
@@ -309,6 +351,8 @@ bool init() {
         SDL_Log("Failed to create renderer!\nSDL_Error: %s", SDL_GetError());
         return false;
     }
+
+    listSongs();
 
     return true;
 }
@@ -422,6 +466,15 @@ void handleDebugWindowKeypress(SDL_Keysym ks) {
 
 }
 
+void renderMain() {
+    if (menuState == MENU_ALL_SONGS) {
+
+    } else {
+        renderText(0,1,menuTexts[menuState]);
+    }
+
+}
+
 int main(int argc, char *argv[]) {
     bool quit = false;
     LTimer syncTimer;
@@ -459,7 +512,7 @@ int main(int argc, char *argv[]) {
         //main window
         SDL_SetRenderDrawColor(gRenderer, debugOptions[0].value, debugOptions[1].value, debugOptions[2].value, 255);
         SDL_RenderClear(gRenderer);
-        renderText(0,1,menuTexts[menuState]);
+        renderMain();
         SDL_RenderPresent(gRenderer);
 
         //debug window
