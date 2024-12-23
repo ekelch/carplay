@@ -248,10 +248,12 @@ bool playPauseCurrentSong() {
     return Mix_PlayingMusic() == 1 && Mix_PausedMusic() == 1;
 }
 
-bool loadSongByName(char* fileName) {
+bool loadSongByIndex(int index) {
+    char* fileName = songsArr[ITEMS_PER_PAGE * state.pageIndex + index - 1];
     pauseGSong();
     Mix_FreeMusic(gMusic);
-    char path[120];
+    char path[120] = "";
+    strcat(path, songResDir);
     strcat(path, "/");
     strcat(path, fileName);
     gMusic = Mix_LoadMUS(path);
@@ -405,6 +407,20 @@ void handlePlayPauseControls(SDL_Keysym ks) {
     }
 }
 
+int keysymToInt(SDL_Keysym ks) {
+    if (ks.sym == SDLK_0 || ks.sym == SDLK_KP_0) {
+        return 0;
+    }
+    if (ks.sym >= SDLK_1 && ks.sym <= SDLK_9) {
+        return ks.sym - SDLK_0;
+    }
+    if (ks.sym >= SDLK_KP_1 && ks.sym <= SDLK_KP_9) {
+        return ks.sym - SDLK_KP_ENTER;
+    }
+    printf("failed to convert ks to int, returning -1\n");
+    return -1;
+}
+
 void handleMainWindowMenuNav(const SDL_Keysym ks) {
     handlePlayPauseControls(ks);
     if (ks.sym == SDLK_BACKSPACE) {
@@ -419,27 +435,32 @@ void handleMainWindowMenuNav(const SDL_Keysym ks) {
     } else if (state.menu_state == MENU_PLAYLISTS) {
         handleMenuPlaylists(ks);
     } else if (state.menu_state == MENU_ALL_SONGS) {
-        // handlePlayAllSong(ks);
+        int songIndex = keysymToInt(ks);
+        if (songIndex > 0) {
+            loadSongByIndex(songIndex);
+            playGSong();
+        }
     }
 }
 
 void handleDebugWindowKeypress(SDL_Keysym ks) {
     const int sym = ks.sym;
     bool shifted = ks.mod == KMOD_LSHIFT ? true : false;
+    int keyNum = keysymToInt(ks);
 
-    if (sym == SDLK_UP || sym == SDLK_KP_8) {
+    if (keyNum == 1) {
         if (selectedOption - 1 >= 0) {
             selectedOption--;
             renderFontForDebugOption(&debugOptions[selectedOption]);
             renderFontForDebugOption(&debugOptions[selectedOption + 1]);
         }
-    } else if (sym == SDLK_DOWN || sym == SDLK_KP_5) {
+    } else if (sym == SDLK_DOWN || keyNum == 5) {
         if (selectedOption + 1 < DEBUG_PROPERTY_COUNT) {
             selectedOption++;
             renderFontForDebugOption(&debugOptions[selectedOption]);
             renderFontForDebugOption(&debugOptions[selectedOption - 1]);
         }
-    } else if (sym == SDLK_LEFT || sym == SDLK_KP_4) {
+    } else if (sym == SDLK_LEFT || keyNum == 4) {
         if (shifted) {
             if (debugOptions[selectedOption].value - 5 > debugOptions[selectedOption].min) {
                 debugOptions[selectedOption].value -= 5;
@@ -450,7 +471,7 @@ void handleDebugWindowKeypress(SDL_Keysym ks) {
             debugOptions[selectedOption].value--;
         }
         renderFontForDebugOption(&debugOptions[selectedOption]);
-    } else if (sym == SDLK_RIGHT || sym == SDLK_KP_6) {
+    } else if (sym == SDLK_RIGHT || keyNum == 6) {
         if (shifted) {
             if (debugOptions[selectedOption].value + 5 < debugOptions[selectedOption].max) {
                 debugOptions[selectedOption].value += 5;
