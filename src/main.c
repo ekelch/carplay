@@ -8,6 +8,7 @@
 #include "dirent.h"
 #include "sys/stat.h"
 #include "stdbool.h"
+#include "util.h"
 
 const bool DEBUG_WINDOW = true;
 const int SCREEN_WIDTH = 800;
@@ -17,19 +18,14 @@ const int DEBUG_HEIGHT = 600;
 const int FRAME_RATE = 16;
 const int TICKS_PER_FRAME = 1000 / FRAME_RATE;
 const int LINE_SPACE = 16;
-const int MAP_CAPACITY = 100;
 const int MAX_SONGS = 100;
+const int ITEMS_PER_PAGE = 9;
 const char* songResDir = "/Users/evankelch/Library/Application Support/mp/resources";
-char* songs[MAX_SONGS];
+char* songsArr[MAX_SONGS];
 int songCount = 0;
 
 const SDL_Color fontColor = {255, 172, 28, 255};
 const SDL_Color selectedFontColor = {130, 233, 211, 255};
-
-typedef struct {
-    bool started;
-    Uint64 startTicks;
-} LTimer;
 
 typedef struct {
     SDL_Texture* sdlTexture;
@@ -63,6 +59,11 @@ typedef enum {
     MENU_ALL_SONGS
 } MenuState;
 
+typedef struct {
+    MenuState menu_state;
+    int pageIndex;
+} State;
+
 char* menuTexts[] = {
     "Welcome\n\nPress any key to enter",
     "1. Artists\n2. Playlists\n3. All songs",
@@ -75,63 +76,12 @@ SDL_Window* dWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 SDL_Renderer* dRenderer = NULL;
 TTF_Font* dFont = NULL;
-MenuState menuState = MENU_WELCOME;
+State state = {MENU_WELCOME, 0};
 Mix_Music* gMusic = NULL;
 int linePos = 0;
 int selectedOption = 0;
 LDebugOption debugOptions[DEBUG_PROPERTY_COUNT];
-
-void startTimer(LTimer* t) {
-    t->started = true;
-    t->startTicks = SDL_GetTicks64();
-}
-void stopTimer(LTimer* t) {
-    t->started = false;
-    t->startTicks = 0;
-}
-
-bool loadTTFs() {
-    dFont = TTF_OpenFont("./resources/fira.ttf", 16);
-    if (dFont == NULL) {
-        SDL_Log("Failed to open TTF font!\nSDL_Error: %s", SDL_GetError());
-        return false;
-    }
-    return true;
-}
-
-typedef struct {
-    char key;
-    LTexture texture;
-} TextureMapKVPair;
-
-typedef struct {
-    int size;
-    TextureMapKVPair* pairs[MAP_CAPACITY];
-} LTextureMap;
-
-LTextureMap textureMap = { .pairs = 0 };
-
-void add_to_texture_map(const char key, const LTexture value) {
-    if (textureMap.size >= MAP_CAPACITY) {
-        printf("map is full, cannot add key:%c", key);
-        return;
-    }
-    TextureMapKVPair* entry = malloc(sizeof(TextureMapKVPair));
-    entry->key = key;
-    entry->texture = value;
-    textureMap.pairs[textureMap.size] = entry;
-    textureMap.size++;
-}
-
-LTexture get_from_texture_map(const char key) {
-    for (int i = 0; i < textureMap.size; i++) {
-        if (key == textureMap.pairs[i]->key) {
-            return textureMap.pairs[i]->texture;
-        }
-    }
-    printf("failed to find texture in map: \'%c\', returning empty space as placeholder.\n", key);
-    return textureMap.pairs[0]->texture;
-}
+LTexture textureMap[100];
 
 bool loadFontTextureMap() {
     const char* chars = " qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890!@#$%^&*()_+-=,./:;'[]{}";
@@ -148,11 +98,13 @@ bool loadFontTextureMap() {
         }
         SDL_Rect renderQuad = {0,0,surface->w, surface->h};
         LTexture lTexture = {sdlTexture, renderQuad};
-        add_to_texture_map(chars[i], lTexture);
+        textureMap[chars[i]] = lTexture;
     }
     return true;
 }
 
+//DEBUG WINDOW RENDERING
+//THESE FUNCTIONS NEEDS REFACTOR TO JOIN WITH MAIN RENDER FUNCTIONS
 char* formatDebugFont(const LDebugOption debugOption) {
     char* r = malloc(sizeof(char) * 63);
     sprintf(r, " %-12s: %-d", debugOption.description, debugOption.value);
@@ -167,7 +119,6 @@ SDL_Rect* getRenderQuad(const int x, const int y, const int w, const int h) {
     rq->h = h;
     return rq;
 }
-
 LTexture* createTextureFromSurface(SDL_Renderer* renderer, SDL_Surface* surface) {
     LTexture* lTexture = malloc(sizeof(LTexture));
     lTexture->sdlTexture = malloc(sizeof(SDL_Texture*));
@@ -180,7 +131,6 @@ LTexture* createTextureFromSurface(SDL_Renderer* renderer, SDL_Surface* surface)
     lTexture->renderQuad = renderQuad;
     return lTexture;
 }
-
 bool renderFontForDebugOption(LDebugOption* debugOption) {
     free(debugOption->lTexture);
     free(debugOption->renderQuad);
@@ -197,7 +147,6 @@ bool renderFontForDebugOption(LDebugOption* debugOption) {
     SDL_FreeSurface(fontSurface);
     return true;
 }
-
 LDebugOption* mallocDebugOption(const char* description, const int index, const int value, const int min, const int max) {
     LDebugOption* db = malloc(sizeof(LDebugOption));
     db->description = description;
@@ -222,12 +171,8 @@ void populateDebugOptions() {
     updDebug(DEBUG_BACKGROUND_COLOR_B, "b", 0, 0, 255);
     updDebug(DEBUG_FONT_SCALE, "font scale", 3, 1, 9);
 }
-
-bool loadMedia() {
-    populateDebugOptions();
-    return loadTTFs() && loadFontTextureMap();
-}
-
+//END DEBUG WINDOW RENDERING
+//RENDERING
 void renderText(const int x, const int y, const char* text) {
     SDL_Rect renderQuad = {x,y,0,0};
     for (int i = 0; i < strlen(text); i++) {
@@ -235,7 +180,7 @@ void renderText(const int x, const int y, const char* text) {
             renderQuad.x = x;
             renderQuad.y += LINE_SPACE;
         } else {
-            LTexture lTexture = get_from_texture_map(text[i]);
+            LTexture lTexture = textureMap[text[i]];
             renderQuad.w = lTexture.renderQuad.w;
             renderQuad.h = lTexture.renderQuad.h;
             SDL_RenderCopy(gRenderer, lTexture.sdlTexture, NULL, &renderQuad);
@@ -244,40 +189,34 @@ void renderText(const int x, const int y, const char* text) {
     }
 }
 
-void listSongs() {
-    char cwd[1024];
-    getcwd(cwd, sizeof(cwd));
+void renderSongsPage(const int page) {
+    char* pagetext = malloc(sizeof(char) * 1024);
+    int strPos = 0;
 
-    if (chdir(songResDir) == -1) {
-        printf("Failed to chdir, errno: %d\n", errno);
-        exit(1);
-    }
-
-    DIR* dirp = opendir(".");
-    struct dirent* entry;
-    struct stat filestat;
-
-    if (dirp == NULL) {
-        printf("Unable to read dir\n");
-        exit(1);
-    }
-    while ((entry = readdir(dirp))) {
-        int res = stat(entry->d_name, &filestat);
-        if (res == -1) {
-            printf("Unable to stat file: %s, errno: %d\n", entry->d_name, errno);
-            exit(1);
+    for (int i = page * ITEMS_PER_PAGE; i < ITEMS_PER_PAGE; i++) {
+        pagetext[strPos++] = i + '1';
+        pagetext[strPos++] = '.';
+        pagetext[strPos++] = ' ';
+        for (int j = 0; j < strlen(songsArr[i]); j++) {
+            pagetext[strPos++] = songsArr[i][j];
         }
-        if (S_ISREG(filestat.st_mode) && entry->d_name[0] != '.') {
-            songs[songCount++] = entry->d_name;
-        }
+        pagetext[strPos++] = '\n';
     }
-    closedir(dirp);
-    if (chdir(cwd) == -1) {
-        printf("Failed to back to prev cwd, errno: %d\n", errno);
-        exit(1);
-    }
+    pagetext[strPos] = '\0';
+
+    renderText(0,0,pagetext);
+    free(pagetext);
 }
 
+void renderMain() {
+    if (state.menu_state == MENU_ALL_SONGS) {
+        renderSongsPage(0);
+    } else {
+        renderText(0,0,menuTexts[state.menu_state]);
+    }
+}
+//END RENDERING
+//SONG LOAD / CONTROLS
 void playGSong() {
     if (Mix_PlayingMusic() == 1) {
         if (Mix_PausedMusic() == 1) {
@@ -309,31 +248,22 @@ bool playPauseCurrentSong() {
     return Mix_PlayingMusic() == 1 && Mix_PausedMusic() == 1;
 }
 
-bool loadSong(int artist) {
+bool loadSongByName(char* fileName) {
     pauseGSong();
     Mix_FreeMusic(gMusic);
-    char* songFile = artist == 1 ? "./resources/songs/nikitata.mp3" : "./resources/songs/thingsHappen.mp3";
-    gMusic = Mix_LoadMUS(songFile);
+    char path[120];
+    strcat(path, "/");
+    strcat(path, fileName);
+    gMusic = Mix_LoadMUS(path);
     if (gMusic == NULL) {
-        SDL_Log("Failed to play %s\nSDL_error: %s", songFile, SDL_GetError());
+        SDL_Log("Failed to play %s\nSDL_error: %s", path, SDL_GetError());
         return false;
     }
     return true;
 }
+//END SONG LOAD / CONTROLS
 
-bool loadSongsAllSongs(int index) {
-    pauseGSong();
-    Mix_FreeMusic(gMusic);
-    char* filetoload = songResDir;
-    strcat(&filetoload, songs[index]);
-    gMusic = Mix_LoadMUS(filetoload);
-    if (gMusic == NULL) {
-        SDL_Log("Failed to play %s\nSDL_error: %s", filetoload, SDL_GetError());
-        return false;
-    }
-    return true;
-}
-
+// INIT / LOAD MEDIA
 bool init() {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         SDL_Log("Failed to init SDL!\nSDL_Error: %s", SDL_GetError());
@@ -367,11 +297,61 @@ bool init() {
         return false;
     }
 
-    listSongs();
-
     return true;
 }
 
+bool detectSongs() {
+    char cwd[1024];
+    getcwd(cwd, sizeof(cwd));
+
+    if (chdir(songResDir) == -1) {
+        printf("Failed to chdir, errno: %d\n", errno);
+        return false;
+    }
+
+    DIR* dirp = opendir(".");
+    struct dirent* entry;
+    struct stat filestat;
+
+    if (dirp == NULL) {
+        printf("Unable to read dir\n");
+        return false;
+    }
+    while ((entry = readdir(dirp))) {
+        int res = stat(entry->d_name, &filestat);
+        if (res == -1) {
+            printf("Unable to stat file: %s, errno: %d\n", entry->d_name, errno);
+            return false;
+        }
+        if (S_ISREG(filestat.st_mode) && entry->d_name[0] != '.') {
+            char* sn = malloc(sizeof(char) * 128);
+            strcpy(sn, entry->d_name);
+            songsArr[songCount++] = sn;
+        }
+    }
+    closedir(dirp);
+    if (chdir(cwd) == -1) {
+        printf("Failed to back to prev cwd, errno: %d\n", errno);
+        return false;
+    }
+    return true;
+}
+
+bool loadTTFs() {
+    dFont = TTF_OpenFont("./resources/fira.ttf", 16);
+    if (dFont == NULL) {
+        SDL_Log("Failed to open TTF font!\nSDL_Error: %s", SDL_GetError());
+        return false;
+    }
+    return true;
+}
+
+bool loadMedia() {
+    populateDebugOptions();
+    return loadTTFs() && loadFontTextureMap() && detectSongs();
+}
+//END INIT / LOAD MEDIA
+// CLEANUP
 void destroyDebugWindow() {
     SDL_DestroyRenderer(dRenderer);
     SDL_DestroyWindow(dWindow);
@@ -385,27 +365,28 @@ void cleanup() {
     IMG_Quit();
     SDL_Quit();
 }
-
+// END CLEANUP
+// MENU NAVIGATION
 void handleMenuNavigate(const SDL_Keysym ks) {
     const int s = ks.sym;
     if (s == SDLK_1 || s == SDLK_KP_1) {
-        menuState = MENU_ARTISTS;
+        state.menu_state = MENU_ARTISTS;
     } else if (s == SDLK_2 || s == SDLK_KP_2) {
-        menuState = MENU_PLAYLISTS;
+        state.menu_state = MENU_PLAYLISTS;
     } else if (s == SDLK_3 || s == SDLK_KP_3) {
-        menuState = MENU_ALL_SONGS;
+        state.menu_state = MENU_ALL_SONGS;
     }
 }
 
 void handleMenuArtists(const SDL_Keysym ks) {
     const int s = ks.sym;
     if (s == SDLK_0 || s == SDLK_KP_0) {
-        menuState = MENU_NAVIGATE;
+        state.menu_state = MENU_NAVIGATE;
     } else if (s == SDLK_1 || s == SDLK_KP_1) {
-        loadSong(1);
+        // loadSong(1);
         playGSong();
     } else if (s == SDLK_2 || s == SDLK_KP_2) {
-        loadSong(2);
+        // loadSong(2);
         playGSong();
     }
 }
@@ -413,7 +394,7 @@ void handleMenuArtists(const SDL_Keysym ks) {
 void handleMenuPlaylists(const SDL_Keysym ks) {
     const int s = ks.sym;
     if (s == SDLK_0 || s == SDLK_KP_0) {
-        menuState = MENU_NAVIGATE;
+        state.menu_state = MENU_NAVIGATE;
     }
 }
 
@@ -424,26 +405,21 @@ void handlePlayPauseControls(SDL_Keysym ks) {
     }
 }
 
-void handlePlayAllSong(SDL_Keysym ks) {
-    int index = ks.sym - SDLK_KP_0;
-    loadSongsAllSongs(index);
-}
-
 void handleMainWindowMenuNav(const SDL_Keysym ks) {
     handlePlayPauseControls(ks);
     if (ks.sym == SDLK_BACKSPACE) {
-        menuState = MENU_WELCOME;
+        state.menu_state = MENU_WELCOME;
     }
-    if (menuState == MENU_WELCOME) {
-        menuState = MENU_NAVIGATE;
-    } else if (menuState == MENU_NAVIGATE) {
+    if (state.menu_state == MENU_WELCOME) {
+        state.menu_state = MENU_NAVIGATE;
+    } else if (state.menu_state == MENU_NAVIGATE) {
         handleMenuNavigate(ks);
-    } else if (menuState == MENU_ARTISTS) {
+    } else if (state.menu_state == MENU_ARTISTS) {
         handleMenuArtists(ks);
-    } else if (menuState == MENU_PLAYLISTS) {
+    } else if (state.menu_state == MENU_PLAYLISTS) {
         handleMenuPlaylists(ks);
-    } else if (menuState == MENU_ALL_SONGS) {
-        handlePlayAllSong(ks);
+    } else if (state.menu_state == MENU_ALL_SONGS) {
+        // handlePlayAllSong(ks);
     }
 }
 
@@ -486,35 +462,10 @@ void handleDebugWindowKeypress(SDL_Keysym ks) {
         }
         renderFontForDebugOption(&debugOptions[selectedOption]);
     }
-
 }
+//END MENU NAVIGATION
 
-char* listSongString() {
-    char* rtext = malloc(sizeof(char) * 1024);
-    int p = 0;
-
-    for (int i = 0; i < songCount; i++) {
-        rtext[p++] = i + '1';
-        rtext[p++] = ' ';
-        for (int j = 0; j < strlen(songs[i]); j++) {
-            rtext[p++] = songs[i][j];
-        }
-        rtext[p++] = '\n';
-    }
-    rtext[p] = '\0';
-    return rtext;
-}
-
-void renderMain() {
-    if (menuState == MENU_ALL_SONGS) {
-        char* rtext = listSongString();
-        renderText(0,0, rtext);
-        free(rtext);
-    } else {
-        renderText(0,0,menuTexts[menuState]);
-    }
-}
-
+//MAIN LOOP
 int main(int argc, char *argv[]) {
     bool quit = false;
     LTimer syncTimer;

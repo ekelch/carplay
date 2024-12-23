@@ -8,7 +8,7 @@
 -- CMAKE_PROJECT_NAME: carplay
 -- CMAKE_FINDCMAKE: /Users/evankelch/CLionProjects/carplay/CMAKE
 
--- SOURCE entry point : src/main.c
+-- SOURCE entry point : src/main.csrc/util.c
 
 
 -- FINDING SDL2

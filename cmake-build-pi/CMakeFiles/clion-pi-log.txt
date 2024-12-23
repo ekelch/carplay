@@ -26,12 +26,12 @@ CMake Error at /Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/m
 
   It fails with the following output:
 
-    Change Dir: '/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-QDMkDq'
+    Change Dir: '/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-RR7ALo'
     
-    Run Build Command(s): "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/ninja/mac/aarch64/ninja" -v cmTC_a9475
-    [1/2] /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always -o CMakeFiles/cmTC_a9475.dir/testCCompiler.c.o -c /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-QDMkDq/testCCompiler.c
-    FAILED: CMakeFiles/cmTC_a9475.dir/testCCompiler.c.o 
-    /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always -o CMakeFiles/cmTC_a9475.dir/testCCompiler.c.o -c /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-QDMkDq/testCCompiler.c
+    Run Build Command(s): "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/ninja/mac/aarch64/ninja" -v cmTC_2e482
+    [1/2] /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always -o CMakeFiles/cmTC_2e482.dir/testCCompiler.c.o -c /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-RR7ALo/testCCompiler.c
+    FAILED: CMakeFiles/cmTC_2e482.dir/testCCompiler.c.o 
+    /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always -o CMakeFiles/cmTC_2e482.dir/testCCompiler.c.o -c /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-RR7ALo/testCCompiler.c
     arm-none-eabi-gcc: error: unrecognized command-line option '-arch'; did you mean '-march='?
     ninja: build stopped: subcommand failed.
     

@@ -56,6 +56,13 @@ build CMakeFiles/carplay.dir/src/main.c.o: C_COMPILER__carplay_unscanned_Release
   OBJECT_DIR = CMakeFiles/carplay.dir
   OBJECT_FILE_DIR = CMakeFiles/carplay.dir/src
 
+build CMakeFiles/carplay.dir/src/util.c.o: C_COMPILER__carplay_unscanned_Release /Users/evankelch/CLionProjects/carplay/src/util.c || cmake_object_order_depends_target_carplay
+  DEP_FILE = CMakeFiles/carplay.dir/src/util.c.o.d
+  FLAGS = -O3 -DNDEBUG -std=gnu11 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -mmacosx-version-min=14.5 -fcolor-diagnostics
+  INCLUDES = -I/opt/homebrew/include/SDL2
+  OBJECT_DIR = CMakeFiles/carplay.dir
+  OBJECT_FILE_DIR = CMakeFiles/carplay.dir/src
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target carplay
@@ -64,7 +71,7 @@ build CMakeFiles/carplay.dir/src/main.c.o: C_COMPILER__carplay_unscanned_Release
 #############################################
 # Link the executable bin/carplay
 
-build bin/carplay: C_EXECUTABLE_LINKER__carplay_Release CMakeFiles/carplay.dir/src/main.c.o | /opt/homebrew/lib/libSDL2main.a /opt/homebrew/lib/libSDL2.dylib /opt/homebrew/lib/libSDL2_ttf.dylib /opt/homebrew/lib/libSDL2_ttf.dylib /opt/homebrew/lib/libSDL2_image.dylib /opt/homebrew/lib/libSDL2_mixer.dylib
+build bin/carplay: C_EXECUTABLE_LINKER__carplay_Release CMakeFiles/carplay.dir/src/main.c.o CMakeFiles/carplay.dir/src/util.c.o | /opt/homebrew/lib/libSDL2main.a /opt/homebrew/lib/libSDL2.dylib /opt/homebrew/lib/libSDL2_ttf.dylib /opt/homebrew/lib/libSDL2_ttf.dylib /opt/homebrew/lib/libSDL2_image.dylib /opt/homebrew/lib/libSDL2_mixer.dylib
   FLAGS = -O3 -DNDEBUG -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -mmacosx-version-min=14.5
   LINK_LIBRARIES = /opt/homebrew/lib/libSDL2main.a  /opt/homebrew/lib/libSDL2.dylib  -framework Cocoa  /opt/homebrew/lib/libSDL2_ttf.dylib  /opt/homebrew/lib/libSDL2_ttf.dylib  -framework Cocoa  /opt/homebrew/lib/libSDL2_image.dylib  /opt/homebrew/lib/libSDL2_mixer.dylib
   OBJECT_DIR = CMakeFiles/carplay.dir

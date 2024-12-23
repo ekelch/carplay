@@ -43,7 +43,7 @@
 				}
 			],
 			"type" : "STRING",
-			"value" : "Debug"
+			"value" : "Release"
 		},
 		{
 			"name" : "CMAKE_CACHEFILE_DIR",
@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/Users/evankelch/CLionProjects/carplay/cmake-build-debug"
+			"value" : "/Users/evankelch/CLionProjects/carplay/cmake-build-release"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -479,7 +479,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/Users/evankelch/CLionProjects/carplay/cmake-build-debug/CMakeFiles/pkgRedirects"
+			"value" : "/Users/evankelch/CLionProjects/carplay/cmake-build-release/CMakeFiles/pkgRedirects"
 		},
 		{
 			"name" : "CMAKE_GENERATOR",
@@ -1255,7 +1255,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa"
+			"value" : "/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;/opt/homebrew/lib/libSDL2_ttf.dylib;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa"
 		},
 		{
 			"name" : "SDL2_IMAGE_INCLUDE_DIR",
@@ -1327,7 +1327,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2.dylib;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa"
+			"value" : "/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2main.a;/opt/homebrew/lib/libSDL2.dylib;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa;-framework Cocoa"
 		},
 		{
 			"name" : "carplay_BINARY_DIR",
@@ -1339,7 +1339,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/Users/evankelch/CLionProjects/carplay/cmake-build-debug"
+			"value" : "/Users/evankelch/CLionProjects/carplay/cmake-build-release"
 		},
 		{
 			"name" : "carplay_IS_TOP_LEVEL",

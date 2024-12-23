@@ -6,7 +6,7 @@
 			[
 				{
 					"build" : ".",
-					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"jsonFile" : "directory-.-Release-f5ebdc15457944623624.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.13.1"
@@ -19,7 +19,7 @@
 					]
 				}
 			],
-			"name" : "Debug",
+			"name" : "Release",
 			"projects" : 
 			[
 				{
@@ -39,7 +39,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "carplay::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-carplay-Debug-f8e8a441325a71823c05.json",
+					"jsonFile" : "target-carplay-Release-58fa3065a6d2f121a736.json",
 					"name" : "carplay",
 					"projectIndex" : 0
 				}
@@ -49,7 +49,7 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "/Users/evankelch/CLionProjects/carplay/cmake-build-debug",
+		"build" : "/Users/evankelch/CLionProjects/carplay/cmake-build-release",
 		"source" : "/Users/evankelch/CLionProjects/carplay"
 	},
 	"version" : 

@@ -1125,3 +1125,643 @@ events:
         
       exitCode: 1
 ...
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:12 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      1
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find crt0.o: No such file or directory
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find -lc: No such file or directory
+      collect2: error: ld returned 1 exit status
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:12 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc 
+      Build flags: 
+      Id flags: -c 
+      
+      The output was:
+      0
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CMakeCCompilerId.o"
+      
+      The C compiler identification is GNU, found in:
+        /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/3.30.5/CompilerIdC/CMakeCCompilerId.o
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:12 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-c++ 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      1
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find crt0.o: No such file or directory
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find -lstdc++: No such file or directory
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find -lm: No such file or directory
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find -lc: No such file or directory
+      collect2: error: ld returned 1 exit status
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:12 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-c++ 
+      Build flags: 
+      Id flags: -c 
+      
+      The output was:
+      0
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.o"
+      
+      The CXX compiler identification is GNU, found in:
+        /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/3.30.5/CompilerIdCXX/CMakeCXXCompilerId.o
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:12 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-FHyTg5"
+      binary: "/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-FHyTg5"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: "14.5"
+      CMAKE_OSX_SYSROOT: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk"
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-FHyTg5'
+        
+        Run Build Command(s): "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/ninja/mac/aarch64/ninja" -v cmTC_afb47
+        [1/2] /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always   -v -Wl,-v -o CMakeFiles/cmTC_afb47.dir/CMakeCCompilerABI.c.o -c '/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeCCompilerABI.c'
+        FAILED: CMakeFiles/cmTC_afb47.dir/CMakeCCompilerABI.c.o 
+        /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always   -v -Wl,-v -o CMakeFiles/cmTC_afb47.dir/CMakeCCompilerABI.c.o -c '/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeCCompilerABI.c'
+        Using built-in specs.
+        COLLECT_GCC=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc
+        arm-none-eabi-gcc: error: unrecognized command-line option '-arch'; did you mean '-march='?
+        Target: arm-none-eabi
+        Configured with: ../configure --target=arm-none-eabi --prefix=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0 --infodir=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/share/info/arm-none-eabi --disable-nls --without-headers --with-as=/opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-as --with-ld=/opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld --enable-languages=c,c++,objc,lto --enable-lto --enable-multilib --with-multilib-list=aprofile,rmprofile --with-system-zlib --with-zstd --disable-debug --disable-dependency-tracking --prefix=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0 --libdir=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/lib
+        Thread model: single
+        Supported LTO compression algorithms: zlib zstd
+        gcc version 14.2.0 (GCC) 
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeTestCCompiler.cmake:56 (try_compile)"
+      - "CMakeLists.txt:12 (project)"
+    checks:
+      - "Check for working C compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc"
+    directories:
+      source: "/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-3KWGUm"
+      binary: "/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-3KWGUm"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: "14.5"
+      CMAKE_OSX_SYSROOT: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk"
+    buildResult:
+      variable: "CMAKE_C_COMPILER_WORKS"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-3KWGUm'
+        
+        Run Build Command(s): "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/ninja/mac/aarch64/ninja" -v cmTC_b19dc
+        [1/2] /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always -o CMakeFiles/cmTC_b19dc.dir/testCCompiler.c.o -c /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-3KWGUm/testCCompiler.c
+        FAILED: CMakeFiles/cmTC_b19dc.dir/testCCompiler.c.o 
+        /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always -o CMakeFiles/cmTC_b19dc.dir/testCCompiler.c.o -c /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-3KWGUm/testCCompiler.c
+        arm-none-eabi-gcc: error: unrecognized command-line option '-arch'; did you mean '-march='?
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+...
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:12 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      1
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find crt0.o: No such file or directory
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find -lc: No such file or directory
+      collect2: error: ld returned 1 exit status
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:12 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc 
+      Build flags: 
+      Id flags: -c 
+      
+      The output was:
+      0
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CMakeCCompilerId.o"
+      
+      The C compiler identification is GNU, found in:
+        /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/3.30.5/CompilerIdC/CMakeCCompilerId.o
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:12 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-c++ 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      1
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find crt0.o: No such file or directory
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find -lstdc++: No such file or directory
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find -lm: No such file or directory
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find -lc: No such file or directory
+      collect2: error: ld returned 1 exit status
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:12 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-c++ 
+      Build flags: 
+      Id flags: -c 
+      
+      The output was:
+      0
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.o"
+      
+      The CXX compiler identification is GNU, found in:
+        /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/3.30.5/CompilerIdCXX/CMakeCXXCompilerId.o
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:12 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-Rtbi1e"
+      binary: "/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-Rtbi1e"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: "14.5"
+      CMAKE_OSX_SYSROOT: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk"
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-Rtbi1e'
+        
+        Run Build Command(s): "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/ninja/mac/aarch64/ninja" -v cmTC_de158
+        [1/2] /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always   -v -Wl,-v -o CMakeFiles/cmTC_de158.dir/CMakeCCompilerABI.c.o -c '/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeCCompilerABI.c'
+        FAILED: CMakeFiles/cmTC_de158.dir/CMakeCCompilerABI.c.o 
+        /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always   -v -Wl,-v -o CMakeFiles/cmTC_de158.dir/CMakeCCompilerABI.c.o -c '/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeCCompilerABI.c'
+        Using built-in specs.
+        COLLECT_GCC=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc
+        arm-none-eabi-gcc: error: unrecognized command-line option '-arch'; did you mean '-march='?
+        Target: arm-none-eabi
+        Configured with: ../configure --target=arm-none-eabi --prefix=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0 --infodir=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/share/info/arm-none-eabi --disable-nls --without-headers --with-as=/opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-as --with-ld=/opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld --enable-languages=c,c++,objc,lto --enable-lto --enable-multilib --with-multilib-list=aprofile,rmprofile --with-system-zlib --with-zstd --disable-debug --disable-dependency-tracking --prefix=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0 --libdir=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/lib
+        Thread model: single
+        Supported LTO compression algorithms: zlib zstd
+        gcc version 14.2.0 (GCC) 
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeTestCCompiler.cmake:56 (try_compile)"
+      - "CMakeLists.txt:12 (project)"
+    checks:
+      - "Check for working C compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc"
+    directories:
+      source: "/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-kMYW7S"
+      binary: "/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-kMYW7S"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: "14.5"
+      CMAKE_OSX_SYSROOT: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk"
+    buildResult:
+      variable: "CMAKE_C_COMPILER_WORKS"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-kMYW7S'
+        
+        Run Build Command(s): "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/ninja/mac/aarch64/ninja" -v cmTC_2d63b
+        [1/2] /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always -o CMakeFiles/cmTC_2d63b.dir/testCCompiler.c.o -c /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-kMYW7S/testCCompiler.c
+        FAILED: CMakeFiles/cmTC_2d63b.dir/testCCompiler.c.o 
+        /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always -o CMakeFiles/cmTC_2d63b.dir/testCCompiler.c.o -c /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-kMYW7S/testCCompiler.c
+        arm-none-eabi-gcc: error: unrecognized command-line option '-arch'; did you mean '-march='?
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+...
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:12 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      1
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find crt0.o: No such file or directory
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find -lc: No such file or directory
+      collect2: error: ld returned 1 exit status
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:12 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc 
+      Build flags: 
+      Id flags: -c 
+      
+      The output was:
+      0
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CMakeCCompilerId.o"
+      
+      The C compiler identification is GNU, found in:
+        /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/3.30.5/CompilerIdC/CMakeCCompilerId.o
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:12 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-c++ 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      1
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find crt0.o: No such file or directory
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find -lstdc++: No such file or directory
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find -lm: No such file or directory
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find -lc: No such file or directory
+      collect2: error: ld returned 1 exit status
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:12 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-c++ 
+      Build flags: 
+      Id flags: -c 
+      
+      The output was:
+      0
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.o"
+      
+      The CXX compiler identification is GNU, found in:
+        /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/3.30.5/CompilerIdCXX/CMakeCXXCompilerId.o
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:12 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-laSGyP"
+      binary: "/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-laSGyP"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: "14.5"
+      CMAKE_OSX_SYSROOT: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk"
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-laSGyP'
+        
+        Run Build Command(s): "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/ninja/mac/aarch64/ninja" -v cmTC_466e0
+        [1/2] /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always   -v -Wl,-v -o CMakeFiles/cmTC_466e0.dir/CMakeCCompilerABI.c.o -c '/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeCCompilerABI.c'
+        FAILED: CMakeFiles/cmTC_466e0.dir/CMakeCCompilerABI.c.o 
+        /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always   -v -Wl,-v -o CMakeFiles/cmTC_466e0.dir/CMakeCCompilerABI.c.o -c '/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeCCompilerABI.c'
+        Using built-in specs.
+        COLLECT_GCC=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc
+        arm-none-eabi-gcc: error: unrecognized command-line option '-arch'; did you mean '-march='?
+        Target: arm-none-eabi
+        Configured with: ../configure --target=arm-none-eabi --prefix=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0 --infodir=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/share/info/arm-none-eabi --disable-nls --without-headers --with-as=/opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-as --with-ld=/opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld --enable-languages=c,c++,objc,lto --enable-lto --enable-multilib --with-multilib-list=aprofile,rmprofile --with-system-zlib --with-zstd --disable-debug --disable-dependency-tracking --prefix=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0 --libdir=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/lib
+        Thread model: single
+        Supported LTO compression algorithms: zlib zstd
+        gcc version 14.2.0 (GCC) 
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeTestCCompiler.cmake:56 (try_compile)"
+      - "CMakeLists.txt:12 (project)"
+    checks:
+      - "Check for working C compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc"
+    directories:
+      source: "/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-9JQaXZ"
+      binary: "/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-9JQaXZ"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: "14.5"
+      CMAKE_OSX_SYSROOT: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk"
+    buildResult:
+      variable: "CMAKE_C_COMPILER_WORKS"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-9JQaXZ'
+        
+        Run Build Command(s): "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/ninja/mac/aarch64/ninja" -v cmTC_eced4
+        [1/2] /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always -o CMakeFiles/cmTC_eced4.dir/testCCompiler.c.o -c /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-9JQaXZ/testCCompiler.c
+        FAILED: CMakeFiles/cmTC_eced4.dir/testCCompiler.c.o 
+        /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always -o CMakeFiles/cmTC_eced4.dir/testCCompiler.c.o -c /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-9JQaXZ/testCCompiler.c
+        arm-none-eabi-gcc: error: unrecognized command-line option '-arch'; did you mean '-march='?
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+...
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:12 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      1
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find crt0.o: No such file or directory
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find -lc: No such file or directory
+      collect2: error: ld returned 1 exit status
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:12 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc 
+      Build flags: 
+      Id flags: -c 
+      
+      The output was:
+      0
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CMakeCCompilerId.o"
+      
+      The C compiler identification is GNU, found in:
+        /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/3.30.5/CompilerIdC/CMakeCCompilerId.o
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:12 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-c++ 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      1
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find crt0.o: No such file or directory
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find -lstdc++: No such file or directory
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find -lm: No such file or directory
+      /opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld: cannot find -lc: No such file or directory
+      collect2: error: ld returned 1 exit status
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:12 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-c++ 
+      Build flags: 
+      Id flags: -c 
+      
+      The output was:
+      0
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.o"
+      
+      The CXX compiler identification is GNU, found in:
+        /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/3.30.5/CompilerIdCXX/CMakeCXXCompilerId.o
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:12 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-hQOLow"
+      binary: "/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-hQOLow"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: "14.5"
+      CMAKE_OSX_SYSROOT: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk"
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-hQOLow'
+        
+        Run Build Command(s): "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/ninja/mac/aarch64/ninja" -v cmTC_e8a0a
+        [1/2] /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always   -v -Wl,-v -o CMakeFiles/cmTC_e8a0a.dir/CMakeCCompilerABI.c.o -c '/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeCCompilerABI.c'
+        FAILED: CMakeFiles/cmTC_e8a0a.dir/CMakeCCompilerABI.c.o 
+        /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always   -v -Wl,-v -o CMakeFiles/cmTC_e8a0a.dir/CMakeCCompilerABI.c.o -c '/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeCCompilerABI.c'
+        Using built-in specs.
+        COLLECT_GCC=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc
+        arm-none-eabi-gcc: error: unrecognized command-line option '-arch'; did you mean '-march='?
+        Target: arm-none-eabi
+        Configured with: ../configure --target=arm-none-eabi --prefix=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0 --infodir=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/share/info/arm-none-eabi --disable-nls --without-headers --with-as=/opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-as --with-ld=/opt/homebrew/opt/arm-none-eabi-binutils/bin/arm-none-eabi-ld --enable-languages=c,c++,objc,lto --enable-lto --enable-multilib --with-multilib-list=aprofile,rmprofile --with-system-zlib --with-zstd --disable-debug --disable-dependency-tracking --prefix=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0 --libdir=/opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/lib
+        Thread model: single
+        Supported LTO compression algorithms: zlib zstd
+        gcc version 14.2.0 (GCC) 
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.30/Modules/CMakeTestCCompiler.cmake:56 (try_compile)"
+      - "CMakeLists.txt:12 (project)"
+    checks:
+      - "Check for working C compiler: /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc"
+    directories:
+      source: "/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-RR7ALo"
+      binary: "/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-RR7ALo"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: "14.5"
+      CMAKE_OSX_SYSROOT: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk"
+    buildResult:
+      variable: "CMAKE_C_COMPILER_WORKS"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-RR7ALo'
+        
+        Run Build Command(s): "/Users/evankelch/Applications/CLion Nova.app/Contents/bin/ninja/mac/aarch64/ninja" -v cmTC_2e482
+        [1/2] /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always -o CMakeFiles/cmTC_2e482.dir/testCCompiler.c.o -c /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-RR7ALo/testCCompiler.c
+        FAILED: CMakeFiles/cmTC_2e482.dir/testCCompiler.c.o 
+        /opt/homebrew/Cellar/arm-none-eabi-gcc/14.2.0/bin/arm-none-eabi-gcc   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always -o CMakeFiles/cmTC_2e482.dir/testCCompiler.c.o -c /Users/evankelch/CLionProjects/carplay/cmake-build-pi/CMakeFiles/CMakeScratch/TryCompile-RR7ALo/testCCompiler.c
+        arm-none-eabi-gcc: error: unrecognized command-line option '-arch'; did you mean '-march='?
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+...
