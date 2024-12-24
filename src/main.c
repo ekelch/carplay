@@ -17,9 +17,10 @@ const int DEBUG_WIDTH = 480;
 const int DEBUG_HEIGHT = 600;
 const int FRAME_RATE = 16;
 const int TICKS_PER_FRAME = 1000 / FRAME_RATE;
-const int LINE_SPACE = 16;
+const int LINE_SPACE = 24;
 const int MAX_SONGS = 100;
 const int ITEMS_PER_PAGE = 9;
+const int MAX_FILE_NAME = 240;
 const char* songResDir = "/Users/evankelch/Library/Application Support/mp/resources";
 char* songsArr[MAX_SONGS];
 int songCount = 0;
@@ -221,28 +222,24 @@ void renderText(const int x, const int y, const char* text) {
     }
 }
 
-void renderSongsPage(const int page) {
-    char* pagetext = malloc(sizeof(char) * 1024);
-    int strPos = 0;
+//refactor this it's awful
+void renderSongsPage() {
+    char pagetext[2048] = "";
+    char header[100];
+    char lineText[MAX_FILE_NAME] = "";
+    sprintf(header, "0. Back   Page: %d/%d   Previous Page: (/)   Next Page: (*)\n\n", state.pageIndex, songCount / ITEMS_PER_PAGE);
+    strcat(pagetext, header);
 
-    for (int i = page * ITEMS_PER_PAGE; i < ITEMS_PER_PAGE; i++) {
-        pagetext[strPos++] = i + '1';
-        pagetext[strPos++] = '.';
-        pagetext[strPos++] = ' ';
-        for (int j = 0; j < strlen(songsArr[i]); j++) {
-            pagetext[strPos++] = songsArr[i][j];
-        }
-        pagetext[strPos++] = '\n';
+    for (int i = 0; i < ITEMS_PER_PAGE; i++) {
+        sprintf(lineText, "%d. %s\n", i + 1, songsArr[i + state.pageIndex * ITEMS_PER_PAGE]);
+        strcat(pagetext, lineText);
     }
-    pagetext[strPos] = '\0';
-
     renderText(0,0,pagetext);
-    free(pagetext);
 }
 
 void renderMain() {
     if (getMenuState() == MENU_ALL_SONGS) {
-        renderSongsPage(0);
+        renderSongsPage();
     } else {
         renderText(0,0,menuTexts[getMenuState()]);
     }
@@ -281,10 +278,13 @@ bool playPauseCurrentSong() {
 }
 
 bool loadAndPlaySongByIndex(const int index) {
-    char* fileName = songsArr[ITEMS_PER_PAGE * state.pageIndex + index - 1];
+    if (songsArr[state.pageIndex * ITEMS_PER_PAGE + index] == NULL) {
+        return false;
+    }
+    char* fileName = songsArr[ITEMS_PER_PAGE * state.pageIndex + index];
     pauseGSong();
     Mix_FreeMusic(gMusic);
-    char path[120] = "";
+    char path[300] = "";
     strcat(path, songResDir);
     strcat(path, "/");
     strcat(path, fileName);
@@ -373,7 +373,7 @@ bool detectSongs() {
 }
 
 bool loadTTFs() {
-    dFont = TTF_OpenFont("./resources/fira.ttf", 16);
+    dFont = TTF_OpenFont("./resources/fira.ttf", 24);
     if (dFont == NULL) {
         SDL_Log("Failed to open TTF font!\nSDL_Error: %s", SDL_GetError());
         return false;
@@ -416,7 +416,7 @@ int keysymToInt(SDL_Keysym ks) {
 }
 
 void handleMainWindowMenuNav(const SDL_Keysym ks) {
-    const SDL_Keycode s = ks.sym;
+    const SDL_Keycode k = ks.sym;
     const int keyIndex = keysymToInt(ks);
     const MenuState menu_state = getMenuState();
 
@@ -428,17 +428,23 @@ void handleMainWindowMenuNav(const SDL_Keysym ks) {
                 pushMenuState(keyIndex + 1);
             }
         } else if (menu_state == MENU_ALL_SONGS) {
-            loadAndPlaySongByIndex(keyIndex);
+            loadAndPlaySongByIndex(keyIndex - 1);
         }
     }
     if (keyIndex == 0) {
         popMenuState();
     }
-    if (s == SDLK_ESCAPE) {
+    if (k == SDLK_ESCAPE) {
         playPauseCurrentSong();
     }
-    if (s == SDLK_BACKSPACE) {
+    if (k == SDLK_BACKSPACE) {
         pushMenuState(MENU_WELCOME);
+    }
+    if (k == SDLK_KP_MULTIPLY && songCount / ITEMS_PER_PAGE > state.pageIndex) {
+        state.pageIndex++;
+    }
+    if (k == SDLK_KP_DIVIDE && state.pageIndex > 0) {
+        state.pageIndex--;
     }
 
 }
