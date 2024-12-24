@@ -1,3 +1,0 @@
-/Users/evankelch/CLionProjects/carplay/cmake-build-debug/CMakeFiles/carplay.dir
-/Users/evankelch/CLionProjects/carplay/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/evankelch/CLionProjects/carplay/cmake-build-debug/CMakeFiles/rebuild_cache.dir
