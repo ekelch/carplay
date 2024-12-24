@@ -55,12 +55,14 @@ typedef enum {
     MENU_NAVIGATE,
     MENU_ARTISTS,
     MENU_PLAYLISTS,
-    MENU_STATIC_COUNT,
-    MENU_ALL_SONGS
+    MENU_ALL_SONGS,
+    MENU_PROP_COUNT
 } MenuState;
 
 typedef struct {
-    MenuState menu_state;
+    MenuState m_stack[4];
+    int m_i;
+
     int pageIndex;
 } State;
 
@@ -76,7 +78,7 @@ SDL_Window* dWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 SDL_Renderer* dRenderer = NULL;
 TTF_Font* dFont = NULL;
-State state = {MENU_WELCOME, 0};
+State state = {{0,0,0,0}, 0};
 Mix_Music* gMusic = NULL;
 int linePos = 0;
 int selectedOption = 0;
@@ -102,6 +104,36 @@ bool loadFontTextureMap() {
     }
     return true;
 }
+
+//STATE
+MenuState getMenuState() {
+    return state.m_stack[state.m_i];
+}
+
+void pushMenuState(const MenuState nState) {
+    if (nState == getMenuState()) {
+        return;
+    }
+    const int max = 3;
+    if (state.m_i < max) {
+        state.m_stack[++state.m_i] = nState;
+    } else {
+        for (int i = 0; i < max - 1; i++) {
+            state.m_stack[i] = state.m_stack[i + 1];
+        }
+        state.m_stack[max] = nState;
+    }
+}
+
+MenuState popMenuState() {
+    state.m_stack[state.m_i] = 0;
+    if (state.m_i > 0) {
+        state.m_i--;
+    }
+    return state.m_stack[state.m_i];
+}
+//END STATE
+//END STATE
 
 //DEBUG WINDOW RENDERING
 //THESE FUNCTIONS NEEDS REFACTOR TO JOIN WITH MAIN RENDER FUNCTIONS
@@ -209,10 +241,10 @@ void renderSongsPage(const int page) {
 }
 
 void renderMain() {
-    if (state.menu_state == MENU_ALL_SONGS) {
+    if (getMenuState() == MENU_ALL_SONGS) {
         renderSongsPage(0);
     } else {
-        renderText(0,0,menuTexts[state.menu_state]);
+        renderText(0,0,menuTexts[getMenuState()]);
     }
 }
 //END RENDERING
@@ -248,7 +280,7 @@ bool playPauseCurrentSong() {
     return Mix_PlayingMusic() == 1 && Mix_PausedMusic() == 1;
 }
 
-bool loadSongByIndex(int index) {
+bool loadAndPlaySongByIndex(const int index) {
     char* fileName = songsArr[ITEMS_PER_PAGE * state.pageIndex + index - 1];
     pauseGSong();
     Mix_FreeMusic(gMusic);
@@ -261,6 +293,7 @@ bool loadSongByIndex(int index) {
         SDL_Log("Failed to play %s\nSDL_error: %s", path, SDL_GetError());
         return false;
     }
+    playGSong();
     return true;
 }
 //END SONG LOAD / CONTROLS
@@ -369,44 +402,6 @@ void cleanup() {
 }
 // END CLEANUP
 // MENU NAVIGATION
-void handleMenuNavigate(const SDL_Keysym ks) {
-    const int s = ks.sym;
-    if (s == SDLK_1 || s == SDLK_KP_1) {
-        state.menu_state = MENU_ARTISTS;
-    } else if (s == SDLK_2 || s == SDLK_KP_2) {
-        state.menu_state = MENU_PLAYLISTS;
-    } else if (s == SDLK_3 || s == SDLK_KP_3) {
-        state.menu_state = MENU_ALL_SONGS;
-    }
-}
-
-void handleMenuArtists(const SDL_Keysym ks) {
-    const int s = ks.sym;
-    if (s == SDLK_0 || s == SDLK_KP_0) {
-        state.menu_state = MENU_NAVIGATE;
-    } else if (s == SDLK_1 || s == SDLK_KP_1) {
-        // loadSong(1);
-        playGSong();
-    } else if (s == SDLK_2 || s == SDLK_KP_2) {
-        // loadSong(2);
-        playGSong();
-    }
-}
-
-void handleMenuPlaylists(const SDL_Keysym ks) {
-    const int s = ks.sym;
-    if (s == SDLK_0 || s == SDLK_KP_0) {
-        state.menu_state = MENU_NAVIGATE;
-    }
-}
-
-void handlePlayPauseControls(SDL_Keysym ks) {
-    int sym = ks.sym;
-    if (sym == SDLK_ESCAPE) {
-        playPauseCurrentSong();
-    }
-}
-
 int keysymToInt(SDL_Keysym ks) {
     if (ks.sym == SDLK_0 || ks.sym == SDLK_KP_0) {
         return 0;
@@ -417,30 +412,35 @@ int keysymToInt(SDL_Keysym ks) {
     if (ks.sym >= SDLK_KP_1 && ks.sym <= SDLK_KP_9) {
         return ks.sym - SDLK_KP_ENTER;
     }
-    printf("failed to convert ks to int, returning -1\n");
     return -1;
 }
 
 void handleMainWindowMenuNav(const SDL_Keysym ks) {
-    handlePlayPauseControls(ks);
-    if (ks.sym == SDLK_BACKSPACE) {
-        state.menu_state = MENU_WELCOME;
-    }
-    if (state.menu_state == MENU_WELCOME) {
-        state.menu_state = MENU_NAVIGATE;
-    } else if (state.menu_state == MENU_NAVIGATE) {
-        handleMenuNavigate(ks);
-    } else if (state.menu_state == MENU_ARTISTS) {
-        handleMenuArtists(ks);
-    } else if (state.menu_state == MENU_PLAYLISTS) {
-        handleMenuPlaylists(ks);
-    } else if (state.menu_state == MENU_ALL_SONGS) {
-        int songIndex = keysymToInt(ks);
-        if (songIndex > 0) {
-            loadSongByIndex(songIndex);
-            playGSong();
+    const SDL_Keycode s = ks.sym;
+    const int keyIndex = keysymToInt(ks);
+    const MenuState menu_state = getMenuState();
+
+    if (keyIndex > 0) { // pos number pressed
+        if (menu_state == MENU_WELCOME) {
+            pushMenuState(MENU_NAVIGATE);
+        } else if (menu_state == MENU_NAVIGATE) {
+            if (keyIndex < MENU_PROP_COUNT) {
+                pushMenuState(keyIndex + 1);
+            }
+        } else if (menu_state == MENU_ALL_SONGS) {
+            loadAndPlaySongByIndex(keyIndex);
         }
     }
+    if (keyIndex == 0) {
+        popMenuState();
+    }
+    if (s == SDLK_ESCAPE) {
+        playPauseCurrentSong();
+    }
+    if (s == SDLK_BACKSPACE) {
+        pushMenuState(MENU_WELCOME);
+    }
+
 }
 
 void handleDebugWindowKeypress(SDL_Keysym ks) {
@@ -448,7 +448,7 @@ void handleDebugWindowKeypress(SDL_Keysym ks) {
     bool shifted = ks.mod == KMOD_LSHIFT ? true : false;
     int keyNum = keysymToInt(ks);
 
-    if (keyNum == 1) {
+    if (sym == SDLK_UP || keyNum == 8) {
         if (selectedOption - 1 >= 0) {
             selectedOption--;
             renderFontForDebugOption(&debugOptions[selectedOption]);
