@@ -13,8 +13,6 @@
 const bool DEBUG_WINDOW = true;
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 480;
-const int DEBUG_WIDTH = 480;
-const int DEBUG_HEIGHT = 600;
 const int FRAME_RATE = 16;
 const int TICKS_PER_FRAME = 1000 / FRAME_RATE;
 const int LINE_SPACE = 24;
@@ -39,8 +37,6 @@ typedef struct {
     int index;
     int min;
     int max;
-    LTexture* lTexture;
-    SDL_Rect* renderQuad;
 } LDebugOption;
 
 typedef enum {
@@ -63,8 +59,9 @@ typedef enum {
 typedef struct {
     MenuState m_stack[4];
     int m_i;
-
     int pageIndex;
+    DebugOption selectedDebug;
+    bool optionsOpen;
 } State;
 
 char* menuTexts[] = {
@@ -75,14 +72,11 @@ char* menuTexts[] = {
 };
 
 SDL_Window* gWindow = NULL;
-SDL_Window* dWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
-SDL_Renderer* dRenderer = NULL;
 TTF_Font* dFont = NULL;
 State state = {{0,0,0,0}, 0};
 Mix_Music* gMusic = NULL;
 int linePos = 0;
-int selectedOption = 0;
 LDebugOption debugOptions[DEBUG_PROPERTY_COUNT];
 LTexture textureMap[100];
 
@@ -144,52 +138,6 @@ char* formatDebugFont(const LDebugOption debugOption) {
     return r;
 }
 
-SDL_Rect* getRenderQuad(const int x, const int y, const int w, const int h) {
-    SDL_Rect* rq = malloc(sizeof(SDL_Rect));
-    rq->x = x;
-    rq->y = y;
-    rq->w = w;
-    rq->h = h;
-    return rq;
-}
-LTexture* createTextureFromSurface(SDL_Renderer* renderer, SDL_Surface* surface) {
-    LTexture* lTexture = malloc(sizeof(LTexture));
-    lTexture->sdlTexture = malloc(sizeof(SDL_Texture*));
-    lTexture->sdlTexture = SDL_CreateTextureFromSurface(renderer, surface);
-    if (lTexture->sdlTexture == NULL) {
-        SDL_Log("TTF failed to render texture from surface!\nSDL_Error: %s", SDL_GetError());
-        return NULL;
-    }
-    const SDL_Rect renderQuad = {0,0,surface->w, surface->h};
-    lTexture->renderQuad = renderQuad;
-    return lTexture;
-}
-bool renderFontForDebugOption(LDebugOption* debugOption) {
-    free(debugOption->lTexture);
-    free(debugOption->renderQuad);
-    SDL_Surface* fontSurface = TTF_RenderText_Solid(dFont, formatDebugFont(*debugOption), fontColor);
-    if (fontSurface == NULL) {
-        SDL_Log("TTF failed to render text to surface!\nSDL_Error: %s", SDL_GetError());
-        return false;
-    }
-
-    debugOption->lTexture = createTextureFromSurface(dRenderer, fontSurface);
-    debugOption->renderQuad = getRenderQuad(0, LINE_SPACE * debugOption->index, fontSurface->w, fontSurface->h);
-    const SDL_Color color = debugOption->index == selectedOption ? selectedFontColor : fontColor;
-    SDL_SetTextureColorMod(debugOption->lTexture->sdlTexture, color.r, color.g, color.b);
-    SDL_FreeSurface(fontSurface);
-    return true;
-}
-LDebugOption* mallocDebugOption(const char* description, const int index, const int value, const int min, const int max) {
-    LDebugOption* db = malloc(sizeof(LDebugOption));
-    db->description = description;
-    db->index = index;
-    db->value = value;
-    db->min = min;
-    db->max = max;
-    return db;
-}
-
 void updDebug(const int index, const char* description, const int value, const int min, const int max) {
     debugOptions[index].index = index;
     debugOptions[index].description = description;
@@ -197,7 +145,6 @@ void updDebug(const int index, const char* description, const int value, const i
     debugOptions[index].min = min;
     debugOptions[index].max = max;
 }
-
 void populateDebugOptions() {
     updDebug(DEBUG_BACKGROUND_COLOR_R, "r", 60, 0, 255);
     updDebug(DEBUG_BACKGROUND_COLOR_G, "g", 25, 0, 255);
@@ -206,14 +153,19 @@ void populateDebugOptions() {
 }
 //END DEBUG WINDOW RENDERING
 //RENDERING
-void renderText(const int x, const int y, const char* text) {
+void renderTextWithColor(const int x, const int y, const char* text, const SDL_Color color) {
     SDL_Rect renderQuad = {x,y,0,0};
     for (int i = 0; i < strlen(text); i++) {
         if (text[i] == '\n') {
             renderQuad.x = x;
             renderQuad.y += LINE_SPACE;
         } else {
-            LTexture lTexture = textureMap[text[i]];
+            const LTexture lTexture = textureMap[text[i]];
+            if (color.a != 0) {
+                SDL_SetTextureColorMod(lTexture.sdlTexture, color.r, color.g, color.b);
+            } else {
+                SDL_SetTextureColorMod(lTexture.sdlTexture, fontColor.r, fontColor.g, fontColor.b);
+            }
             renderQuad.w = lTexture.renderQuad.w;
             renderQuad.h = lTexture.renderQuad.h;
             SDL_RenderCopy(gRenderer, lTexture.sdlTexture, NULL, &renderQuad);
@@ -221,20 +173,19 @@ void renderText(const int x, const int y, const char* text) {
         }
     }
 }
+void renderText(const int x, const int y, const char* text) {
+    SDL_Color c = {.a = 0};
+    renderTextWithColor(x, y, text, c);
+}
 
-//refactor this it's awful
 void renderSongsPage() {
-    char pagetext[2048] = "";
-    char header[100];
     char lineText[MAX_FILE_NAME] = "";
-    sprintf(header, "0. Back   Page: %d/%d   Previous Page: (/)   Next Page: (*)\n\n", state.pageIndex, songCount / ITEMS_PER_PAGE);
-    strcat(pagetext, header);
-
+    sprintf(lineText, "0. Back   Page: %d/%d   Previous Page: (/)   Next Page: (*)\n\n", state.pageIndex, songCount / ITEMS_PER_PAGE);
+    renderText(0,0,lineText);
     for (int i = 0; i < ITEMS_PER_PAGE; i++) {
         sprintf(lineText, "%d. %s\n", i + 1, songsArr[i + state.pageIndex * ITEMS_PER_PAGE]);
-        strcat(pagetext, lineText);
+        renderText(0,LINE_SPACE * (i + 2),lineText);
     }
-    renderText(0,0,pagetext);
 }
 
 void renderMain() {
@@ -242,6 +193,16 @@ void renderMain() {
         renderSongsPage();
     } else {
         renderText(0,0,menuTexts[getMenuState()]);
+    }
+}
+void renderOptions() {
+    const SDL_Rect bgRect = {SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2, SCREEN_HEIGHT};
+    SDL_SetRenderDrawColor(gRenderer, 90,30,0, 190);
+    SDL_RenderFillRect(gRenderer, &bgRect);
+    for (int i = 0; i < DEBUG_PROPERTY_COUNT; i++) {
+        char dbBuf[128];
+        sprintf(dbBuf, "%12s: %03d   [%d,%d]", debugOptions[i].description, debugOptions[i].value, debugOptions[i].min, debugOptions[i].max);
+        renderTextWithColor(SCREEN_WIDTH / 2, i * LINE_SPACE, dbBuf, state.selectedDebug == i ? selectedFontColor : fontColor);
     }
 }
 //END RENDERING
@@ -319,15 +280,12 @@ bool init() {
     }
 
     gWindow = SDL_CreateWindow("carplay", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-    dWindow = SDL_CreateWindow("carplay debug", SCREEN_WIDTH + 10, 0, DEBUG_WIDTH, DEBUG_HEIGHT, SDL_WINDOW_SHOWN);
-    if (gWindow == NULL || dWindow == NULL) {
+    if (gWindow == NULL) {
         SDL_Log("Failed to create SDL Window!\nSDL_Error: %s", SDL_GetError());
         return false;
     }
-
     gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
-    dRenderer = SDL_CreateRenderer(dWindow, -1, SDL_RENDERER_ACCELERATED);
-    if (gRenderer == NULL || dRenderer == NULL) {
+    if (gRenderer == NULL) {
         SDL_Log("Failed to create renderer!\nSDL_Error: %s", SDL_GetError());
         return false;
     }
@@ -387,13 +345,7 @@ bool loadMedia() {
 }
 //END INIT / LOAD MEDIA
 // CLEANUP
-void destroyDebugWindow() {
-    SDL_DestroyRenderer(dRenderer);
-    SDL_DestroyWindow(dWindow);
-}
-
 void cleanup() {
-    destroyDebugWindow();
     SDL_DestroyRenderer(gRenderer);
     SDL_DestroyWindow(gWindow);
     Mix_Quit();
@@ -415,10 +367,52 @@ int keysymToInt(SDL_Keysym ks) {
     return -1;
 }
 
-void handleMainWindowMenuNav(const SDL_Keysym ks) {
+void incdecr(int value) {
+    LDebugOption* db = &debugOptions[state.selectedDebug];
+    int res = db->value + value;
+    if (res > db->max) {
+        db->value = db->max;
+    } else if (res < db->min) {
+        db->value = db->min;
+    } else {
+        db->value = res;
+    }
+}
+
+void handleSettingsKeypress(SDL_Keysym ks) {
+    const int sym = ks.sym;
+    bool shifted = ks.mod == KMOD_LSHIFT ? true : false;
+    int keyNum = keysymToInt(ks);
+
+    if (sym == SDLK_UP || keyNum == 8) {
+        if (state.selectedDebug - 1 >= 0) {
+            state.selectedDebug--;
+        }
+    } else if (sym == SDLK_DOWN || keyNum == 5) {
+        if (state.selectedDebug + 1 < DEBUG_PROPERTY_COUNT) {
+            state.selectedDebug++;
+        }
+    } else if (sym == SDLK_LEFT || keyNum == 4) {
+        shifted ? incdecr(-5) : incdecr(-1);
+    } else if (sym == SDLK_RIGHT || keyNum == 6) {
+        shifted ? incdecr(5) : incdecr(1);
+    }
+}
+
+void handleKeypress(const SDL_Keysym ks) {
     const SDL_Keycode k = ks.sym;
     const int keyIndex = keysymToInt(ks);
     const MenuState menu_state = getMenuState();
+
+    if (k == SDLK_PERIOD || k == SDLK_KP_PERIOD) {
+        state.optionsOpen = !state.optionsOpen;
+        return;
+    }
+
+    if (state.optionsOpen) {
+        handleSettingsKeypress(ks);
+        return;
+    }
 
     if (keyIndex > 0) { // pos number pressed
         if (menu_state == MENU_WELCOME) {
@@ -446,49 +440,6 @@ void handleMainWindowMenuNav(const SDL_Keysym ks) {
     if (k == SDLK_KP_DIVIDE && state.pageIndex > 0) {
         state.pageIndex--;
     }
-
-}
-
-void handleDebugWindowKeypress(SDL_Keysym ks) {
-    const int sym = ks.sym;
-    bool shifted = ks.mod == KMOD_LSHIFT ? true : false;
-    int keyNum = keysymToInt(ks);
-
-    if (sym == SDLK_UP || keyNum == 8) {
-        if (selectedOption - 1 >= 0) {
-            selectedOption--;
-            renderFontForDebugOption(&debugOptions[selectedOption]);
-            renderFontForDebugOption(&debugOptions[selectedOption + 1]);
-        }
-    } else if (sym == SDLK_DOWN || keyNum == 5) {
-        if (selectedOption + 1 < DEBUG_PROPERTY_COUNT) {
-            selectedOption++;
-            renderFontForDebugOption(&debugOptions[selectedOption]);
-            renderFontForDebugOption(&debugOptions[selectedOption - 1]);
-        }
-    } else if (sym == SDLK_LEFT || keyNum == 4) {
-        if (shifted) {
-            if (debugOptions[selectedOption].value - 5 > debugOptions[selectedOption].min) {
-                debugOptions[selectedOption].value -= 5;
-            } else {
-                debugOptions[selectedOption].value = debugOptions[selectedOption].min;
-            }
-        } else if (debugOptions[selectedOption].value - 1 >= debugOptions[selectedOption].min) {
-            debugOptions[selectedOption].value--;
-        }
-        renderFontForDebugOption(&debugOptions[selectedOption]);
-    } else if (sym == SDLK_RIGHT || keyNum == 6) {
-        if (shifted) {
-            if (debugOptions[selectedOption].value + 5 < debugOptions[selectedOption].max) {
-                debugOptions[selectedOption].value += 5;
-            } else {
-                debugOptions[selectedOption].value = debugOptions[selectedOption].max;
-            }
-        } else if (debugOptions[selectedOption].value + 1 <= debugOptions[selectedOption].max) {
-            debugOptions[selectedOption].value++;
-        }
-        renderFontForDebugOption(&debugOptions[selectedOption]);
-    }
 }
 //END MENU NAVIGATION
 
@@ -503,45 +454,26 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    for (int i = 0; i < DEBUG_PROPERTY_COUNT; i++) {
-        renderFontForDebugOption(&debugOptions[i]);
-    }
-
     while (!quit) {
         startTimer(&syncTimer);
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_CLOSE) {
-                if (SDL_GetWindowID(dWindow) == e.window.windowID) {
-                    destroyDebugWindow();
-                } else {
-                    quit = true;
-                }
+                quit = true;
             }
             if (e.type == SDL_KEYDOWN) {
-                if (e.window.windowID == SDL_GetWindowID(gWindow)) {
-                    handleMainWindowMenuNav(e.key.keysym);
-                } else if (e.window.windowID == SDL_GetWindowID(dWindow)) {
-                    handleDebugWindowKeypress(e.key.keysym);
-                }
+                handleKeypress(e.key.keysym);
             }
 
         }
 
-        //main window
         SDL_SetRenderDrawColor(gRenderer, debugOptions[0].value, debugOptions[1].value, debugOptions[2].value, 255);
         SDL_RenderClear(gRenderer);
         renderMain();
+        if (state.optionsOpen) {
+            renderOptions();
+        }
         SDL_RenderPresent(gRenderer);
 
-        //debug window
-        if (dRenderer != NULL) {
-            SDL_SetRenderDrawColor(dRenderer, 33,33,33,255);
-            SDL_RenderClear(dRenderer);
-            for (int i = 0; i < DEBUG_PROPERTY_COUNT; i++) {
-                SDL_RenderCopy(dRenderer, debugOptions[i].lTexture->sdlTexture, NULL, debugOptions[i].renderQuad);
-            }
-            SDL_RenderPresent(dRenderer);
-        }
         //wait
         Uint64 frameTicks = SDL_GetTicks64() - syncTimer.startTicks;
         if (frameTicks < TICKS_PER_FRAME) {
