@@ -15,7 +15,6 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 480;
 const int FRAME_RATE = 16;
 const int TICKS_PER_FRAME = 1000 / FRAME_RATE;
-const int LINE_SPACE = 24;
 const int MAX_SONGS = 100;
 const int ITEMS_PER_PAGE = 9;
 const int MAX_FILE_NAME = 240;
@@ -43,7 +42,9 @@ typedef enum {
     DEBUG_BACKGROUND_COLOR_R,
     DEBUG_BACKGROUND_COLOR_G,
     DEBUG_BACKGROUND_COLOR_B,
-    DEBUG_FONT_SCALE,
+    DEBUG_FONT,
+    DEBUG_FONT_SIZE,
+    DEBUG_LINE_SPACE,
     DEBUG_PROPERTY_COUNT
 } DebugOption;
 
@@ -71,6 +72,11 @@ char* menuTexts[] = {
     "0. Back\n1. Playlist 1\n2. Playlist 2\n",
 };
 
+char* fontNames[] = {
+    "./resources/fira.ttf",
+    "./resources/nasa.ttf"
+};
+
 SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 TTF_Font* dFont = NULL;
@@ -79,6 +85,34 @@ Mix_Music* gMusic = NULL;
 int linePos = 0;
 LDebugOption debugOptions[DEBUG_PROPERTY_COUNT];
 LTexture textureMap[100];
+
+//DEBUG OPTIONS SETUP
+void updDebug(const int index, const char* description, const int value, const int min, const int max) {
+    debugOptions[index].index = index;
+    debugOptions[index].description = description;
+    debugOptions[index].value = value;
+    debugOptions[index].min = min;
+    debugOptions[index].max = max;
+}
+void populateDebugOptions() {
+    updDebug(DEBUG_BACKGROUND_COLOR_R, "r", 60, 0, 255);
+    updDebug(DEBUG_BACKGROUND_COLOR_G, "g", 25, 0, 255);
+    updDebug(DEBUG_BACKGROUND_COLOR_B, "b", 0, 0, 255);
+    updDebug(DEBUG_FONT, "font", 0, 0, 1);
+    updDebug(DEBUG_FONT_SIZE, "font size", 24, 6, 64);
+    updDebug(DEBUG_LINE_SPACE, "line space", 24, 6, 64);
+}
+//END DEBUG OPTIONS SETUP
+//FONTS
+bool loadFont() {
+    TTF_CloseFont(dFont);
+    dFont = TTF_OpenFont(fontNames[debugOptions[DEBUG_FONT].value], debugOptions[DEBUG_FONT_SIZE].value);
+    if (dFont == NULL) {
+        SDL_Log("Failed to open TTF font!\nSDL_Error: %s", SDL_GetError());
+        return false;
+    }
+    return true;
+}
 
 bool loadFontTextureMap() {
     const char* chars = " qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890!@#$%^&*()_+-=,./:;'[]{}";
@@ -99,7 +133,7 @@ bool loadFontTextureMap() {
     }
     return true;
 }
-
+//END FONTS
 //STATE
 MenuState getMenuState() {
     return state.m_stack[state.m_i];
@@ -128,37 +162,13 @@ MenuState popMenuState() {
     return state.m_stack[state.m_i];
 }
 //END STATE
-//END STATE
-
-//DEBUG WINDOW RENDERING
-//THESE FUNCTIONS NEEDS REFACTOR TO JOIN WITH MAIN RENDER FUNCTIONS
-char* formatDebugFont(const LDebugOption debugOption) {
-    char* r = malloc(sizeof(char) * 63);
-    sprintf(r, " %-12s: %-d", debugOption.description, debugOption.value);
-    return r;
-}
-
-void updDebug(const int index, const char* description, const int value, const int min, const int max) {
-    debugOptions[index].index = index;
-    debugOptions[index].description = description;
-    debugOptions[index].value = value;
-    debugOptions[index].min = min;
-    debugOptions[index].max = max;
-}
-void populateDebugOptions() {
-    updDebug(DEBUG_BACKGROUND_COLOR_R, "r", 60, 0, 255);
-    updDebug(DEBUG_BACKGROUND_COLOR_G, "g", 25, 0, 255);
-    updDebug(DEBUG_BACKGROUND_COLOR_B, "b", 0, 0, 255);
-    updDebug(DEBUG_FONT_SCALE, "font scale", 3, 1, 9);
-}
-//END DEBUG WINDOW RENDERING
 //RENDERING
 void renderTextWithColor(const int x, const int y, const char* text, const SDL_Color color) {
     SDL_Rect renderQuad = {x,y,0,0};
     for (int i = 0; i < strlen(text); i++) {
         if (text[i] == '\n') {
             renderQuad.x = x;
-            renderQuad.y += LINE_SPACE;
+            renderQuad.y += debugOptions[DEBUG_FONT_SIZE].value;
         } else {
             const LTexture lTexture = textureMap[text[i]];
             if (color.a != 0) {
@@ -184,7 +194,7 @@ void renderSongsPage() {
     renderText(0,0,lineText);
     for (int i = 0; i < ITEMS_PER_PAGE; i++) {
         sprintf(lineText, "%d. %s\n", i + 1, songsArr[i + state.pageIndex * ITEMS_PER_PAGE]);
-        renderText(0,LINE_SPACE * (i + 2),lineText);
+        renderText(0,debugOptions[DEBUG_LINE_SPACE].value * (i + 2),lineText);
     }
 }
 
@@ -196,13 +206,14 @@ void renderMain() {
     }
 }
 void renderOptions() {
-    const SDL_Rect bgRect = {SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2, SCREEN_HEIGHT};
-    SDL_SetRenderDrawColor(gRenderer, 90,30,0, 190);
+    const int o = 80;
+    const SDL_Rect bgRect = {SCREEN_WIDTH / 2 + o, 0, SCREEN_WIDTH / 2 - o, SCREEN_HEIGHT};
+    SDL_SetRenderDrawColor(gRenderer, debugOptions[0].value, debugOptions[1].value, debugOptions[2].value, 255);
     SDL_RenderFillRect(gRenderer, &bgRect);
     for (int i = 0; i < DEBUG_PROPERTY_COUNT; i++) {
-        char dbBuf[128];
-        sprintf(dbBuf, "%12s: %03d   [%d,%d]", debugOptions[i].description, debugOptions[i].value, debugOptions[i].min, debugOptions[i].max);
-        renderTextWithColor(SCREEN_WIDTH / 2, i * LINE_SPACE, dbBuf, state.selectedDebug == i ? selectedFontColor : fontColor);
+        char dbBuf[64];
+        sprintf(dbBuf, "%10s: %03d  [%d,%d]", debugOptions[i].description, debugOptions[i].value, debugOptions[i].min, debugOptions[i].max);
+        renderTextWithColor(SCREEN_WIDTH / 2 + o, i * debugOptions[DEBUG_LINE_SPACE].value, dbBuf, state.selectedDebug == i ? selectedFontColor : fontColor);
     }
 }
 //END RENDERING
@@ -330,18 +341,9 @@ bool detectSongs() {
     return true;
 }
 
-bool loadTTFs() {
-    dFont = TTF_OpenFont("./resources/fira.ttf", 24);
-    if (dFont == NULL) {
-        SDL_Log("Failed to open TTF font!\nSDL_Error: %s", SDL_GetError());
-        return false;
-    }
-    return true;
-}
-
 bool loadMedia() {
     populateDebugOptions();
-    return loadTTFs() && loadFontTextureMap() && detectSongs();
+    return loadFont() && loadFontTextureMap() && detectSongs();
 }
 //END INIT / LOAD MEDIA
 // CLEANUP
@@ -367,15 +369,19 @@ int keysymToInt(SDL_Keysym ks) {
     return -1;
 }
 
-void incdecr(int value) {
+void adjustSelectedDebugValue(const int delta) {
     LDebugOption* db = &debugOptions[state.selectedDebug];
-    int res = db->value + value;
+    const int res = db->value + delta;
     if (res > db->max) {
         db->value = db->max;
     } else if (res < db->min) {
         db->value = db->min;
     } else {
         db->value = res;
+    }
+    if (state.selectedDebug == DEBUG_FONT || state.selectedDebug == DEBUG_FONT_SIZE) {
+        loadFont();
+        loadFontTextureMap();
     }
 }
 
@@ -393,9 +399,9 @@ void handleSettingsKeypress(SDL_Keysym ks) {
             state.selectedDebug++;
         }
     } else if (sym == SDLK_LEFT || keyNum == 4) {
-        shifted ? incdecr(-5) : incdecr(-1);
+        shifted ? adjustSelectedDebugValue(-5) : adjustSelectedDebugValue(-1);
     } else if (sym == SDLK_RIGHT || keyNum == 6) {
-        shifted ? incdecr(5) : incdecr(1);
+        shifted ? adjustSelectedDebugValue(5) : adjustSelectedDebugValue(1);
     }
 }
 
