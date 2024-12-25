@@ -10,7 +10,6 @@
 #include "stdbool.h"
 #include "util.h"
 
-const bool DEBUG_WINDOW = true;
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 480;
 const int FRAME_RATE = 16;
@@ -18,7 +17,8 @@ const int TICKS_PER_FRAME = 1000 / FRAME_RATE;
 const int MAX_SONGS = 100;
 const int ITEMS_PER_PAGE = 9;
 const int MAX_FILE_NAME = 240;
-const char* songResDir = "/Users/evankelch/Library/Application Support/mp/resources";
+const char* resourceDir = "/Users/evankelch/Library/Application Support/mp/resources";
+const char* configPath = "/Users/evankelch/Library/Application Support/mp/config/config.txt";
 char* songsArr[MAX_SONGS];
 int songCount = 0;
 
@@ -101,6 +101,46 @@ void populateDebugOptions() {
     updDebug(DEBUG_FONT, "font", 0, 0, 1);
     updDebug(DEBUG_FONT_SIZE, "font size", 24, 6, 64);
     updDebug(DEBUG_LINE_SPACE, "line space", 24, 6, 64);
+}
+//terrible!
+void setConfigVar(char* cfg) {
+    char* key = strtok(cfg, "=");
+    char* value = strtok(NULL, "");
+    for (int i = 0; i < DEBUG_PROPERTY_COUNT; i++) {
+        if (strcmp(debugOptions[i].description, key) == 0) {
+            debugOptions[i].value = (int) strtol(value, NULL, 10);
+            break;
+        }
+    }
+}
+
+void saveConfig() {
+    char configBuf[1024];
+    for (int i = 0; i < DEBUG_PROPERTY_COUNT; i++) {
+        char lineBuf[32];
+        sprintf(lineBuf, "%s=%d\n", debugOptions[i].description, debugOptions[i].value);
+        strcat(configBuf, lineBuf);
+    }
+    FILE* cfgF = fopen(configPath, "w");
+    if (cfgF == NULL) {
+        printf("Failed to open config for write");
+        exit(1);
+    }
+    fprintf(cfgF, configBuf);
+    fclose(cfgF);
+}
+
+void readConfigFile() {
+    FILE* cfgF = fopen(configPath, "r");
+    if (cfgF == NULL) {
+        puts("failed to read config");
+        exit(1);
+    }
+    char cfg[32];
+    while (fgets(cfg, 256, cfgF)) {
+        setConfigVar(cfg);
+    }
+    fclose(cfgF);
 }
 //END DEBUG OPTIONS SETUP
 //FONTS
@@ -257,7 +297,7 @@ bool loadAndPlaySongByIndex(const int index) {
     pauseGSong();
     Mix_FreeMusic(gMusic);
     char path[300] = "";
-    strcat(path, songResDir);
+    strcat(path, resourceDir);
     strcat(path, "/");
     strcat(path, fileName);
     gMusic = Mix_LoadMUS(path);
@@ -308,7 +348,7 @@ bool detectSongs() {
     char cwd[1024];
     getcwd(cwd, sizeof(cwd));
 
-    if (chdir(songResDir) == -1) {
+    if (chdir(resourceDir) == -1) {
         printf("Failed to chdir, errno: %d\n", errno);
         return false;
     }
@@ -343,6 +383,7 @@ bool detectSongs() {
 
 bool loadMedia() {
     populateDebugOptions();
+    readConfigFile();
     return loadFont() && loadFontTextureMap() && detectSongs();
 }
 //END INIT / LOAD MEDIA
@@ -411,7 +452,12 @@ void handleKeypress(const SDL_Keysym ks) {
     const MenuState menu_state = getMenuState();
 
     if (k == SDLK_PERIOD || k == SDLK_KP_PERIOD) {
-        state.optionsOpen = !state.optionsOpen;
+        if (state.optionsOpen) {
+            state.optionsOpen = false;
+            saveConfig();
+        } else {
+            state.optionsOpen = true;
+        }
         return;
     }
 
