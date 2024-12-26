@@ -17,6 +17,7 @@ const int TICKS_PER_FRAME = 1000 / FRAME_RATE;
 const int MAX_SONGS = 100;
 const int ITEMS_PER_PAGE = 9;
 const int MAX_FILE_NAME = 240;
+const int VOLUME_STEP = 4;
 const char* resourceDir = "/Users/evankelch/Library/Application Support/mp/resources";
 const char* fontsDir = "/Users/evankelch/Library/Application Support/mp/fonts";
 const char* configPath = "/Users/evankelch/Library/Application Support/mp/config/config.txt";
@@ -65,6 +66,7 @@ typedef struct {
     int pageIndex;
     DebugOption selectedDebug;
     bool optionsOpen;
+    int volume;
 } State;
 
 char* menuTexts[] = {
@@ -77,7 +79,7 @@ char* menuTexts[] = {
 SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 TTF_Font* dFont = NULL;
-State state = {{0,0,0,0}, 0};
+State state = {{0,0,0,0}, 0, 0, 0,false,12};
 Mix_Music* gMusic = NULL;
 int linePos = 0;
 LDebugOption debugOptions[DEBUG_PROPERTY_COUNT];
@@ -101,7 +103,7 @@ void populateDebugOptions() {
 }
 
 //CONFIG
-void saveConfig() {
+void writeToConfig() {
     char configBuf[1024];
     for (int i = 0; i < DEBUG_PROPERTY_COUNT; i++) {
         char lineBuf[32];
@@ -113,12 +115,11 @@ void saveConfig() {
         printf("Failed to open config for write");
         exit(1);
     }
-    fprintf(cfgF, configBuf);
+    fprintf(cfgF, "%s", configBuf);
     fclose(cfgF);
 }
 
-
-void setConfigVar(char* cfg) {
+void setConfigFromFile(char* cfg) {
     char* key = strtok(cfg, "=");
     char* value = strtok(NULL, "");
     for (int i = 0; i < DEBUG_PROPERTY_COUNT; i++) {
@@ -137,7 +138,7 @@ void readConfigFile() {
     }
     char cfg[32];
     while (fgets(cfg, 256, cfgF)) {
-        setConfigVar(cfg);
+        setConfigFromFile(cfg);
     }
     fclose(cfgF);
 }
@@ -269,6 +270,27 @@ void renderOptions() {
         renderTextWithColor(SCREEN_WIDTH / 2 + o, i * debugOptions[DEBUG_LINE_SPACE].value, dbBuf, state.selectedDebug == i ? selectedFontColor : fontColor);
     }
 }
+void renderVolumeBar() {
+    const int boxes = 128/4;
+    const int gap = 1;
+    const int w = SCREEN_WIDTH / boxes - 2 * gap;
+    const int filled = state.volume * boxes / MIX_MAX_VOLUME;
+    SDL_Rect rQuad = {gap, SCREEN_HEIGHT - 12, w - gap * 2, 10};
+
+    SDL_SetRenderDrawColor(gRenderer, 60,20,0,0);
+    for (int i = 0; i < filled; i++) {
+        SDL_RenderFillRect(gRenderer, &rQuad);
+        rQuad.x += w + 2 * gap;
+    }
+    SDL_SetRenderDrawColor(gRenderer, 60,20,0,0);
+    for (int i = 0; i < boxes - filled; i++) {
+        SDL_RenderDrawRect(gRenderer, &rQuad);
+        rQuad.x += w + 2 * gap;
+    }
+    char buf[5];
+    sprintf(buf, "%d", state.volume);
+    renderText(SCREEN_WIDTH - 40, SCREEN_HEIGHT - 40, buf);
+}
 //END RENDERING
 //SONG LOAD / CONTROLS
 void playGSong() {
@@ -303,6 +325,8 @@ bool playPauseCurrentSong() {
 }
 
 bool loadAndPlaySongByIndex(const int index) {
+    Mix_VolumeMusic(state.volume);
+
     if (songsArr[state.pageIndex * ITEMS_PER_PAGE + index] == NULL) {
         return false;
     }
@@ -440,13 +464,25 @@ void adjustSelectedDebugValue(const int delta) {
     }
 }
 
+void adjustVolume(const int delta) {
+    int res = state.volume + delta;
+    if (res > MIX_MAX_VOLUME) {
+        state.volume = MIX_MAX_VOLUME;
+    } else if (res < 0) {
+        state.volume = 0;
+    } else {
+        state.volume = res;
+    }
+    Mix_VolumeMusic(state.volume);
+}
+
 void handleSettingsKeypress(SDL_Keysym ks) {
     const int sym = ks.sym;
     bool shifted = ks.mod == KMOD_LSHIFT ? true : false;
     int keyNum = keysymToInt(ks);
 
     if (sym == SDLK_UP || keyNum == 8) {
-        if (state.selectedDebug - 1 >= 0) {
+        if ((int) state.selectedDebug - 1 >= 0) {
             state.selectedDebug--;
         }
     } else if (sym == SDLK_DOWN || keyNum == 5) {
@@ -468,13 +504,12 @@ void handleKeypress(const SDL_Keysym ks) {
     if (k == SDLK_PERIOD || k == SDLK_KP_PERIOD) {
         if (state.optionsOpen) {
             state.optionsOpen = false;
-            saveConfig();
+            writeToConfig();
         } else {
             state.optionsOpen = true;
         }
         return;
     }
-
     if (state.optionsOpen) {
         handleSettingsKeypress(ks);
         return;
@@ -505,6 +540,12 @@ void handleKeypress(const SDL_Keysym ks) {
     }
     if (k == SDLK_KP_DIVIDE && state.pageIndex > 0) {
         state.pageIndex--;
+    }
+    if (k == SDLK_KP_MINUS) {
+        adjustVolume(-4);
+    }
+    if (k == SDLK_KP_PLUS) {
+        adjustVolume(4);
     }
 }
 //END MENU NAVIGATION
@@ -538,6 +579,7 @@ int main(int argc, char *argv[]) {
         if (state.optionsOpen) {
             renderOptions();
         }
+        renderVolumeBar();
         SDL_RenderPresent(gRenderer);
 
         //wait
