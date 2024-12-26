@@ -79,7 +79,7 @@ char* menuTexts[] = {
 SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 TTF_Font* dFont = NULL;
-State state = {{0,0,0,0}, 0, 0, 0,false,12};
+State state = {{0,0,0,0}, 0, 0, 0,false,40};
 Mix_Music* gMusic = NULL;
 int linePos = 0;
 LDebugOption debugOptions[DEBUG_PROPERTY_COUNT];
@@ -576,10 +576,10 @@ int main(int argc, char *argv[]) {
         SDL_SetRenderDrawColor(gRenderer, debugOptions[0].value, debugOptions[1].value, debugOptions[2].value, 255);
         SDL_RenderClear(gRenderer);
         renderMain();
+        renderVolumeBar();
         if (state.optionsOpen) {
             renderOptions();
         }
-        renderVolumeBar();
         SDL_RenderPresent(gRenderer);
 
         //wait
