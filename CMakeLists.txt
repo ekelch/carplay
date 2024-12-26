@@ -76,7 +76,7 @@ Message("")
 
 ADD_EXECUTABLE(carplay ${SOURCE_FILES} ${SDL2_INCLUDE_DIR})
 
-file(COPY resources DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+#file(COPY resources DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 # ------- End Finds ------ #
 
