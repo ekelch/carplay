@@ -18,9 +18,11 @@ const int MAX_SONGS = 100;
 const int ITEMS_PER_PAGE = 9;
 const int MAX_FILE_NAME = 240;
 const char* resourceDir = "/Users/evankelch/Library/Application Support/mp/resources";
+const char* fontsDir = "/Users/evankelch/Library/Application Support/mp/fonts";
 const char* configPath = "/Users/evankelch/Library/Application Support/mp/config/config.txt";
 char* songsArr[MAX_SONGS];
 int songCount = 0;
+char* fontFiles[9];
 
 const SDL_Color fontColor = {255, 172, 28, 255};
 const SDL_Color selectedFontColor = {130, 233, 211, 255};
@@ -72,11 +74,6 @@ char* menuTexts[] = {
     "0. Back\n1. Playlist 1\n2. Playlist 2\n",
 };
 
-char* fontNames[] = {
-    "./resources/fira.ttf",
-    "./resources/nasa.ttf"
-};
-
 SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 TTF_Font* dFont = NULL;
@@ -102,18 +99,8 @@ void populateDebugOptions() {
     updDebug(DEBUG_FONT_SIZE, "font size", 24, 6, 64);
     updDebug(DEBUG_LINE_SPACE, "line space", 24, 6, 64);
 }
-//terrible!
-void setConfigVar(char* cfg) {
-    char* key = strtok(cfg, "=");
-    char* value = strtok(NULL, "");
-    for (int i = 0; i < DEBUG_PROPERTY_COUNT; i++) {
-        if (strcmp(debugOptions[i].description, key) == 0) {
-            debugOptions[i].value = (int) strtol(value, NULL, 10);
-            break;
-        }
-    }
-}
 
+//CONFIG
 void saveConfig() {
     char configBuf[1024];
     for (int i = 0; i < DEBUG_PROPERTY_COUNT; i++) {
@@ -130,6 +117,18 @@ void saveConfig() {
     fclose(cfgF);
 }
 
+
+void setConfigVar(char* cfg) {
+    char* key = strtok(cfg, "=");
+    char* value = strtok(NULL, "");
+    for (int i = 0; i < DEBUG_PROPERTY_COUNT; i++) {
+        if (strcmp(debugOptions[i].description, key) == 0) {
+            debugOptions[i].value = (int) strtol(value, NULL, 10);
+            break;
+        }
+    }
+}
+
 void readConfigFile() {
     FILE* cfgF = fopen(configPath, "r");
     if (cfgF == NULL) {
@@ -142,13 +141,27 @@ void readConfigFile() {
     }
     fclose(cfgF);
 }
-//END DEBUG OPTIONS SETUP
+//END CONFIG
 //FONTS
+void scanFontDir() {
+    DIR* dirp = opendir(fontsDir);
+    struct dirent* entry;
+    int i = 0;
+    while ((entry = readdir(dirp))) {
+        if (entry->d_name[0] != '.') {
+            fontFiles[i++] = entry->d_name;
+        }
+    }
+    debugOptions[DEBUG_FONT].max = i - 1;
+}
+
 bool loadFont() {
     TTF_CloseFont(dFont);
-    dFont = TTF_OpenFont(fontNames[debugOptions[DEBUG_FONT].value], debugOptions[DEBUG_FONT_SIZE].value);
+    char fontfullpath[200];
+    sprintf(fontfullpath, "%s/%s", fontsDir, fontFiles[debugOptions[DEBUG_FONT].value]);
+    dFont = TTF_OpenFont(fontfullpath, debugOptions[DEBUG_FONT_SIZE].value);
     if (dFont == NULL) {
-        SDL_Log("Failed to open TTF font!\nSDL_Error: %s", SDL_GetError());
+        SDL_Log("Failed to open TTF font %s!\n", fontfullpath);
         return false;
     }
     return true;
@@ -384,6 +397,7 @@ bool detectSongs() {
 bool loadMedia() {
     populateDebugOptions();
     readConfigFile();
+    scanFontDir();
     return loadFont() && loadFontTextureMap() && detectSongs();
 }
 //END INIT / LOAD MEDIA
