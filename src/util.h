@@ -19,6 +19,12 @@ typedef struct Ek_LinkedList {
 
 typedef struct {
     int size;
+    int capacity;
+    char** arr;
+} Ek_List;
+
+typedef struct {
+    int size;
     Ek_LinkedList* arr[MAP_MAX];
 } Ek_Map;
 
@@ -36,4 +42,8 @@ void map_destroy(Ek_Map* map);
 
 void startTimer(LTimer* t);
 void stopTimer(LTimer* t);
+
+Ek_List* list_new(const int capacity);
+void list_add(Ek_List* list, char* in);
+void list_deleteIndex(Ek_List* list, const int index);
 #endif //UTIL_H

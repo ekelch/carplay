@@ -83,7 +83,8 @@ State state = {{0,0,0,0}, 0, 0, 0,false,40};
 Mix_Music* gMusic = NULL;
 int linePos = 0;
 LDebugOption debugOptions[DEBUG_PROPERTY_COUNT];
-LTexture textureMap[100];
+LTexture textureMap[255];
+Ek_Map* artistMap;
 
 //DEBUG OPTIONS SETUP
 void updDebug(const int index, const char* description, const int value, const int min, const int max) {
@@ -248,13 +249,26 @@ void renderSongsPage() {
     renderText(0,0,lineText);
     for (int i = 0; i < ITEMS_PER_PAGE; i++) {
         sprintf(lineText, "%d. %s\n", i + 1, songsArr[i + state.pageIndex * ITEMS_PER_PAGE]);
-        renderText(0,debugOptions[DEBUG_LINE_SPACE].value * (i + 2),lineText);
+        renderText(0,debugOptions[DEBUG_LINE_SPACE].value * (i + 2), lineText);
+    }
+}
+
+void renderArtistsPage() {
+    char lineText[MAX_FILE_NAME] = "";
+    sprintf(lineText, "0. Back   Page: %d/%d   Previous Page: (/)   Next Page: (*)\n\n", state.pageIndex, songCount / ITEMS_PER_PAGE);
+    renderText(0,0,lineText);
+    char** keys = ;
+    for (int i = 0; i < ITEMS_PER_PAGE; i++) {
+        sprintf(lineText, "%d. %s\n", i + 1, keys[i + state.pageIndex * ITEMS_PER_PAGE]);
+        renderText(0,debugOptions[DEBUG_LINE_SPACE].value * (i + 2), lineText);
     }
 }
 
 void renderMain() {
     if (getMenuState() == MENU_ALL_SONGS) {
         renderSongsPage();
+    } else if (getMenuState() == MENU_ARTISTS) {
+
     } else {
         renderText(0,0,menuTexts[getMenuState()]);
     }
@@ -381,6 +395,17 @@ bool init() {
     return true;
 }
 
+// should probably try to understand this lol
+// https://benjaminwuethrich.dev/2015-03-07-sorting-strings-in-c-with-qsort.html
+// basically pointer to start of string (pointer)
+int cmpstr(const void* a, const void* b) {
+    return strcmp(*(char* const*) a, *(char* const*) b);
+}
+
+void sortSongsArr() {
+    qsort(songsArr, songCount, sizeof(char*), cmpstr);
+}
+
 bool detectSongs() {
     char cwd[1024];
     getcwd(cwd, sizeof(cwd));
@@ -418,11 +443,33 @@ bool detectSongs() {
     return true;
 }
 
+void mapArtists() {
+    artistMap = malloc(sizeof(Ek_Map));
+    artistMap->size = 30;
+    char* artistName = strtok(songsArr[0], "-");
+    Ek_List* list = list_new(6);
+    for (int i = 1; i < songCount; i++) {
+        char* next = strtok(songsArr[i], "-");
+        if (strcmp(artistName, next) == 0) {
+            list_add(list, strtok(NULL, "\n"));
+        } else {
+            map_put(artistMap, artistName, list);
+            artistName = next;
+            list = list_new(5);
+        }
+    }
+}
+
 bool loadMedia() {
     populateDebugOptions();
     readConfigFile();
     scanFontDir();
-    return loadFont() && loadFontTextureMap() && detectSongs();
+    loadFont();
+    loadFontTextureMap();
+    detectSongs();
+    sortSongsArr();
+    mapArtists();
+    return true;
 }
 //END INIT / LOAD MEDIA
 // CLEANUP

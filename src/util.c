@@ -72,3 +72,38 @@ void stopTimer(LTimer* t) {
     t->started = false;
     t->startTicks = 0;
 }
+
+Ek_List* list_new(const int capacity) {
+    Ek_List* list = malloc(sizeof(Ek_List));
+    list->capacity = capacity;
+    list->arr = malloc(sizeof(char*) * capacity);
+    return list;
+}
+
+void list_add(Ek_List* list, char* in) {
+    if (list == NULL) {
+        return;
+    }
+    if (list->size >= list->capacity) {
+        char** newArr = malloc(sizeof(char*) * list->capacity * 2);
+        list->capacity = list->capacity * 2;
+        for (int i = 0; i < list->capacity; i++) {
+            newArr[i] = list->arr[i];
+        }
+        newArr[list->size++] = in;
+        free(list->arr);
+        list->arr = newArr;
+    } else {
+        list->arr[list->size++] = in;
+    }
+}
+
+void list_deleteIndex(Ek_List* list, const int index) {
+    if (list == NULL) {
+        return;
+    }
+    for (int i = index; i < list->size - 1; i++) {
+        list->arr[i] = list->arr[i + 1];
+    }
+    list->arr[list->size--] = NULL;
+}
