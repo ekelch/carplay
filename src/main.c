@@ -257,18 +257,23 @@ void renderArtistsPage() {
     char lineText[MAX_FILE_NAME] = "";
     sprintf(lineText, "0. Back   Page: %d/%d   Previous Page: (/)   Next Page: (*)\n\n", state.pageIndex, songCount / ITEMS_PER_PAGE);
     renderText(0,0,lineText);
-    char** keys = ;
+    int keycount = 0;
+    char** keys = map_keys(artistMap, &keycount);
     for (int i = 0; i < ITEMS_PER_PAGE; i++) {
+        if (i + state.pageIndex * ITEMS_PER_PAGE >= keycount) {
+            break;
+        }
         sprintf(lineText, "%d. %s\n", i + 1, keys[i + state.pageIndex * ITEMS_PER_PAGE]);
         renderText(0,debugOptions[DEBUG_LINE_SPACE].value * (i + 2), lineText);
     }
+    free(keys);
 }
 
 void renderMain() {
     if (getMenuState() == MENU_ALL_SONGS) {
         renderSongsPage();
     } else if (getMenuState() == MENU_ARTISTS) {
-
+        renderArtistsPage();
     } else {
         renderText(0,0,menuTexts[getMenuState()]);
     }
@@ -444,8 +449,7 @@ bool detectSongs() {
 }
 
 void mapArtists() {
-    artistMap = malloc(sizeof(Ek_Map));
-    artistMap->size = 30;
+    artistMap = map_new(30);
     char* artistName = strtok(songsArr[0], "-");
     Ek_List* list = list_new(6);
     for (int i = 1; i < songCount; i++) {
