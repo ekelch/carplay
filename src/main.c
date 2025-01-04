@@ -69,6 +69,7 @@ typedef struct {
     bool optionsOpen;
     int volume;
     Ek_List* artistList;
+    int playingIndex;
 } State;
 
 char* menuTexts[] = {
@@ -81,7 +82,7 @@ char* menuTexts[] = {
 SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 TTF_Font* dFont = NULL;
-State state = {{0,0,0,0}, 0, 0, 0,false,40, NULL};
+State state = {{0,0,0,0}, 0, 0, 0,false,40, NULL, -1};
 Mix_Music* gMusic = NULL;
 int linePos = 0;
 LDebugOption debugOptions[DEBUG_PROPERTY_COUNT];
@@ -339,6 +340,14 @@ void renderVolumeBar() {
     sprintf(buf, "%d", state.volume);
     renderText(SCREEN_WIDTH - 40, SCREEN_HEIGHT - 40, buf);
 }
+
+void renderCurrentlyPlaying() {
+    if (state.playingIndex >= 0) {
+        char text[128] = "Currently playing: ";
+        strcat(text, songsArr[state.playingIndex]);
+        renderText(4, SCREEN_HEIGHT - 72, text);
+    }
+}
 //END RENDERING
 //SONG LOAD / CONTROLS
 void playGSong() {
@@ -391,12 +400,21 @@ bool loadAndPlaySongByIndex(const int index) {
         return false;
     }
     playGSong();
+    state.playingIndex = index + state.pageIndex * ITEMS_PER_PAGE;
     return true;
 }
+
 bool loadAndPlaySongByName(const int artistListIndex) {
     Mix_VolumeMusic(state.volume);
 
     char* songName = state.artistList->arr[artistListIndex-1];
+
+    for (int i = 0; i < songCount; i++) {
+        if (strcmp(songName, songsArr[i]) == 0) {
+            state.playingIndex = i;
+            break;
+        }
+    }
 
     pauseGSong();
     Mix_FreeMusic(gMusic);
@@ -412,10 +430,15 @@ bool loadAndPlaySongByName(const int artistListIndex) {
     playGSong();
     return true;
 }
+
+void shuffle() {
+    loadAndPlaySongByIndex(rand() % songCount);
+}
 //END SONG LOAD / CONTROLS
 
 // INIT / LOAD MEDIA
 bool init() {
+    srand(time(NULL));
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         SDL_Log("Failed to init SDL!\nSDL_Error: %s", SDL_GetError());
         return false;
@@ -433,6 +456,7 @@ bool init() {
         SDL_Log("SDL Mixer failed to init!\nSDL_Error: %s", SDL_GetError());
         return false;
     }
+    Mix_HookMusicFinished(shuffle);
 
     gWindow = SDL_CreateWindow("carplay", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (gWindow == NULL) {
@@ -476,7 +500,7 @@ bool detectSongs() {
         printf("Unable to read dir\n");
         return false;
     }
-    while ((entry = readdir(dirp))) {
+    while ((entry = readdir(dirp)) != NULL) {
         int res = stat(entry->d_name, &filestat);
         if (res == -1) {
             printf("Unable to stat file: %s, errno: %d\n", entry->d_name, errno);
@@ -698,6 +722,7 @@ int main(int argc, char *argv[]) {
         SDL_RenderClear(gRenderer);
         renderMain();
         renderVolumeBar();
+        renderCurrentlyPlaying();
         if (state.optionsOpen) {
             renderOptions();
         }
