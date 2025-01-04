@@ -57,6 +57,7 @@ typedef enum {
     MENU_ARTISTS,
     MENU_PLAYLISTS,
     MENU_ALL_SONGS,
+    MENU_ARTIST_PAGE,
     MENU_PROP_COUNT
 } MenuState;
 
@@ -67,6 +68,7 @@ typedef struct {
     DebugOption selectedDebug;
     bool optionsOpen;
     int volume;
+    Ek_List* artistList;
 } State;
 
 char* menuTexts[] = {
@@ -79,7 +81,7 @@ char* menuTexts[] = {
 SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 TTF_Font* dFont = NULL;
-State state = {{0,0,0,0}, 0, 0, 0,false,40};
+State state = {{0,0,0,0}, 0, 0, 0,false,40, NULL};
 Mix_Music* gMusic = NULL;
 int linePos = 0;
 LDebugOption debugOptions[DEBUG_PROPERTY_COUNT];
@@ -269,11 +271,38 @@ void renderArtistsPage() {
     free(keys);
 }
 
+void renderArtistSongs() {
+    state.pageIndex = 0;
+    char lineText[MAX_FILE_NAME] = "";
+    sprintf(lineText, "0. Back   Page: %d/%d   Previous Page: (/)   Next Page: (*)\n\n", state.pageIndex, state.artistList->size / ITEMS_PER_PAGE);
+    renderText(0,0,lineText);
+    for (int i = 0; i < ITEMS_PER_PAGE; i++) {
+        if (i + state.pageIndex * ITEMS_PER_PAGE >= state.artistList->size) {
+            break;
+        }
+        sprintf(lineText, "%d. %s\n", i + 1, state.artistList->arr[i + state.pageIndex * ITEMS_PER_PAGE]);
+        renderText(0,debugOptions[DEBUG_LINE_SPACE].value * (i + 2), lineText);
+    }
+}
+
+void setArtistState(const int index) {
+    int keycount;
+    char** keys = map_keys(artistMap, &keycount);
+    if (keycount < index + state.pageIndex * ITEMS_PER_PAGE) {
+        return;
+    }
+    char* key = keys[index - 1 + state.pageIndex * ITEMS_PER_PAGE];
+    Ek_List* artistList = map_get(artistMap, key);
+    state.artistList = artistList;
+}
+
 void renderMain() {
     if (getMenuState() == MENU_ALL_SONGS) {
         renderSongsPage();
     } else if (getMenuState() == MENU_ARTISTS) {
         renderArtistsPage();
+    } else if (getMenuState() == MENU_ARTIST_PAGE) { //is this necessary? or just go by state?
+        renderArtistSongs();
     } else {
         renderText(0,0,menuTexts[getMenuState()]);
     }
@@ -356,6 +385,25 @@ bool loadAndPlaySongByIndex(const int index) {
     strcat(path, resourceDir);
     strcat(path, "/");
     strcat(path, fileName);
+    gMusic = Mix_LoadMUS(path);
+    if (gMusic == NULL) {
+        SDL_Log("Failed to play %s\nSDL_error: %s", path, SDL_GetError());
+        return false;
+    }
+    playGSong();
+    return true;
+}
+bool loadAndPlaySongByName(const int artistListIndex) {
+    Mix_VolumeMusic(state.volume);
+
+    char* songName = state.artistList->arr[artistListIndex-1];
+
+    pauseGSong();
+    Mix_FreeMusic(gMusic);
+    char path[300] = "";
+    strcat(path, resourceDir);
+    strcat(path, "/");
+    strcat(path, songName);
     gMusic = Mix_LoadMUS(path);
     if (gMusic == NULL) {
         SDL_Log("Failed to play %s\nSDL_error: %s", path, SDL_GetError());
@@ -449,17 +497,25 @@ bool detectSongs() {
 }
 
 void mapArtists() {
-    artistMap = map_new(30);
-    char* artistName = strtok(songsArr[0], "-");
-    Ek_List* list = list_new(6);
+    artistMap = map_new(50);
+    Ek_List* artistSongsList = list_new(6);
+
+    char* line = malloc(sizeof(char) * 128);
+    strcpy(line, songsArr[0]);
+    line = strtok(line, "-");
+
     for (int i = 1; i < songCount; i++) {
-        char* next = strtok(songsArr[i], "-");
-        if (strcmp(artistName, next) == 0) {
-            list_add(list, strtok(NULL, "\n"));
-        } else {
-            map_put(artistMap, artistName, list);
-            artistName = next;
-            list = list_new(5);
+        char* songName = strtok(NULL, "\n");
+        list_add(artistSongsList, songName);
+
+        char* next = malloc(sizeof(char) * 128);
+        strcpy(next, songsArr[i]);
+        strtok(next, "-");
+
+        if (strcmp(line, next) != 0) {
+            map_put(artistMap, line, artistSongsList);
+            line = next;
+            artistSongsList = list_new(5);
         }
     }
 }
@@ -547,6 +603,16 @@ void handleSettingsKeypress(SDL_Keysym ks) {
     }
 }
 
+bool canNextPage() {
+    if (getMenuState() == MENU_ALL_SONGS) {
+        return songCount / ITEMS_PER_PAGE > state.pageIndex;
+    }
+    if (getMenuState() == MENU_ARTIST_PAGE) {
+        return state.artistList->size / ITEMS_PER_PAGE > state.pageIndex;
+    }
+    return false;
+}
+
 void handleKeypress(const SDL_Keysym ks) {
     const SDL_Keycode k = ks.sym;
     const int keyIndex = keysymToInt(ks);
@@ -575,6 +641,11 @@ void handleKeypress(const SDL_Keysym ks) {
             }
         } else if (menu_state == MENU_ALL_SONGS) {
             loadAndPlaySongByIndex(keyIndex - 1);
+        } else if (menu_state == MENU_ARTISTS) {
+            setArtistState(keyIndex);
+            pushMenuState(MENU_ARTIST_PAGE);
+        } else if (menu_state == MENU_ARTIST_PAGE) {
+            loadAndPlaySongByName(keyIndex);
         }
     }
     if (keyIndex == 0) {
@@ -586,10 +657,10 @@ void handleKeypress(const SDL_Keysym ks) {
     if (k == SDLK_BACKSPACE) {
         pushMenuState(MENU_WELCOME);
     }
-    if (k == SDLK_KP_MULTIPLY && songCount / ITEMS_PER_PAGE > state.pageIndex) {
+    if (k == SDLK_KP_MULTIPLY || k == SDLK_RIGHT && canNextPage()) {
         state.pageIndex++;
     }
-    if (k == SDLK_KP_DIVIDE && state.pageIndex > 0) {
+    if (k == SDLK_KP_DIVIDE || k == SDLK_LEFT && state.pageIndex > 0) {
         state.pageIndex--;
     }
     if (k == SDLK_KP_MINUS) {
