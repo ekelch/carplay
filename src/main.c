@@ -505,8 +505,7 @@ void mapArtists() {
     line = strtok(line, "-");
 
     for (int i = 1; i < songCount; i++) {
-        char* songName = strtok(NULL, "\n");
-        list_add(artistSongsList, songName);
+        list_add(artistSongsList, songsArr[i - 1]);
 
         char* next = malloc(sizeof(char) * 128);
         strcpy(next, songsArr[i]);
