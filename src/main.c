@@ -57,14 +57,16 @@ typedef enum {
     MENU_ARTISTS,
     MENU_PLAYLISTS,
     MENU_ALL_SONGS,
-    MENU_ARTIST_PAGE,
+    MENU_ARTIST_SONGS,
     MENU_PROP_COUNT
 } MenuState;
 
 typedef struct {
     MenuState m_stack[4];
     int m_i;
-    int pageIndex;
+    int i_allSongs;
+    int i_artistNames;
+    int i_artistSongs;
     DebugOption selectedDebug;
     bool optionsOpen;
     int volume;
@@ -82,7 +84,7 @@ char* menuTexts[] = {
 SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 TTF_Font* dFont = NULL;
-State state = {{0,0,0,0}, 0, 0, 0,false,40, NULL, -1};
+State state = {{0,0,0,0}, 0, 0, 0, 0, 0,false,40, NULL, -1};
 Mix_Music* gMusic = NULL;
 int linePos = 0;
 LDebugOption debugOptions[DEBUG_PROPERTY_COUNT];
@@ -246,42 +248,43 @@ void renderText(const int x, const int y, const char* text) {
     renderTextWithColor(x, y, text, c);
 }
 
-void renderSongsPage() {
+void renderAllSongsPage() {
     char lineText[MAX_FILE_NAME] = "";
-    sprintf(lineText, "0. Back   Page: %d/%d   Previous Page: (/)   Next Page: (*)\n\n", state.pageIndex, songCount / ITEMS_PER_PAGE);
+    sprintf(lineText, "0. Back  Page: %d/%d   Previous Page: (/)  Next Page: (*)\n\n", state.i_allSongs, songCount / ITEMS_PER_PAGE);
     renderText(0,0,lineText);
     for (int i = 0; i < ITEMS_PER_PAGE; i++) {
-        sprintf(lineText, "%d. %s\n", i + 1, songsArr[i + state.pageIndex * ITEMS_PER_PAGE]);
+        sprintf(lineText, "%d. %s\n", i + 1, songsArr[i + state.i_allSongs * ITEMS_PER_PAGE]);
         renderText(0,debugOptions[DEBUG_LINE_SPACE].value * (i + 2), lineText);
     }
 }
 
-void renderArtistsPage() {
+void renderArtistsList() {
     char lineText[MAX_FILE_NAME] = "";
-    sprintf(lineText, "0. Back   Page: %d/%d   Previous Page: (/)   Next Page: (*)\n\n", state.pageIndex, songCount / ITEMS_PER_PAGE);
-    renderText(0,0,lineText);
     int keycount = 0;
     char** keys = map_keys(artistMap, &keycount);
+
+    sprintf(lineText, "0. Back  Page: %d/%d   Previous Page: (/)  Next Page: (*)\n\n", state.i_artistNames, keycount / ITEMS_PER_PAGE);
+    renderText(0,0,lineText);
+
     for (int i = 0; i < ITEMS_PER_PAGE; i++) {
-        if (i + state.pageIndex * ITEMS_PER_PAGE >= keycount) {
+        if (i + state.i_artistNames * ITEMS_PER_PAGE >= keycount) {
             break;
         }
-        sprintf(lineText, "%d. %s\n", i + 1, keys[i + state.pageIndex * ITEMS_PER_PAGE]);
+        sprintf(lineText, "%d. %s\n", i + 1, keys[i + state.i_artistNames * ITEMS_PER_PAGE]);
         renderText(0,debugOptions[DEBUG_LINE_SPACE].value * (i + 2), lineText);
     }
     free(keys);
 }
 
 void renderArtistSongs() {
-    state.pageIndex = 0;
     char lineText[MAX_FILE_NAME] = "";
-    sprintf(lineText, "0. Back   Page: %d/%d   Previous Page: (/)   Next Page: (*)\n\n", state.pageIndex, state.artistList->size / ITEMS_PER_PAGE);
+    sprintf(lineText, "0. Back  Page: %d/%d   Previous Page: (/)  Next Page: (*)\n\n", state.i_artistSongs, state.artistList->size / ITEMS_PER_PAGE);
     renderText(0,0,lineText);
     for (int i = 0; i < ITEMS_PER_PAGE; i++) {
-        if (i + state.pageIndex * ITEMS_PER_PAGE >= state.artistList->size) {
+        if (i + state.i_artistSongs * ITEMS_PER_PAGE >= state.artistList->size) {
             break;
         }
-        sprintf(lineText, "%d. %s\n", i + 1, state.artistList->arr[i + state.pageIndex * ITEMS_PER_PAGE]);
+        sprintf(lineText, "%d. %s\n", i + 1, state.artistList->arr[i + state.i_artistSongs * ITEMS_PER_PAGE]);
         renderText(0,debugOptions[DEBUG_LINE_SPACE].value * (i + 2), lineText);
     }
 }
@@ -289,20 +292,20 @@ void renderArtistSongs() {
 void setArtistState(const int index) {
     int keycount;
     char** keys = map_keys(artistMap, &keycount);
-    if (keycount < index + state.pageIndex * ITEMS_PER_PAGE) {
+    if (keycount < index + state.i_artistNames * ITEMS_PER_PAGE) {
         return;
     }
-    char* key = keys[index - 1 + state.pageIndex * ITEMS_PER_PAGE];
+    char* key = keys[index - 1 + state.i_artistNames * ITEMS_PER_PAGE];
     Ek_List* artistList = map_get(artistMap, key);
     state.artistList = artistList;
 }
 
 void renderMain() {
     if (getMenuState() == MENU_ALL_SONGS) {
-        renderSongsPage();
+        renderAllSongsPage();
     } else if (getMenuState() == MENU_ARTISTS) {
-        renderArtistsPage();
-    } else if (getMenuState() == MENU_ARTIST_PAGE) { //is this necessary? or just go by state?
+        renderArtistsList();
+    } else if (getMenuState() == MENU_ARTIST_SONGS) {
         renderArtistSongs();
     } else {
         renderText(0,0,menuTexts[getMenuState()]);
@@ -343,9 +346,9 @@ void renderVolumeBar() {
 
 void renderCurrentlyPlaying() {
     if (state.playingIndex >= 0) {
-        char text[128] = "Currently playing: ";
+        char text[128] = "Currently playing: \n";
         strcat(text, songsArr[state.playingIndex]);
-        renderText(4, SCREEN_HEIGHT - 72, text);
+        renderText(4, SCREEN_HEIGHT - 80, text);
     }
 }
 //END RENDERING
@@ -384,10 +387,10 @@ bool playPauseCurrentSong() {
 bool loadAndPlaySongByIndex(const int index) {
     Mix_VolumeMusic(state.volume);
 
-    if (songsArr[state.pageIndex * ITEMS_PER_PAGE + index] == NULL) {
+    if (songsArr[state.i_allSongs * ITEMS_PER_PAGE + index] == NULL) {
         return false;
     }
-    char* fileName = songsArr[ITEMS_PER_PAGE * state.pageIndex + index];
+    char* fileName = songsArr[ITEMS_PER_PAGE * state.i_allSongs + index];
     pauseGSong();
     Mix_FreeMusic(gMusic);
     char path[300] = "";
@@ -400,14 +403,15 @@ bool loadAndPlaySongByIndex(const int index) {
         return false;
     }
     playGSong();
-    state.playingIndex = index + state.pageIndex * ITEMS_PER_PAGE;
+    state.playingIndex = index + state.i_allSongs * ITEMS_PER_PAGE;
     return true;
 }
 
 bool loadAndPlaySongByName(const int artistListIndex) {
     Mix_VolumeMusic(state.volume);
 
-    char* songName = state.artistList->arr[artistListIndex-1];
+    const int offset = state.i_artistSongs * ITEMS_PER_PAGE - 1;
+    char* songName = state.artistList->arr[artistListIndex + offset];
 
     for (int i = 0; i < songCount; i++) {
         if (strcmp(songName, songsArr[i]) == 0) {
@@ -626,14 +630,22 @@ void handleSettingsKeypress(SDL_Keysym ks) {
     }
 }
 
-bool canNextPage() {
-    if (getMenuState() == MENU_ALL_SONGS) {
-        return songCount / ITEMS_PER_PAGE > state.pageIndex;
+void canNextPage() {
+    if (getMenuState() == MENU_ALL_SONGS && songCount / ITEMS_PER_PAGE > state.i_allSongs) {
+        state.i_allSongs++;
     }
-    if (getMenuState() == MENU_ARTIST_PAGE) {
-        return state.artistList->size / ITEMS_PER_PAGE > state.pageIndex;
+    if (getMenuState() == MENU_ARTIST_SONGS && state.artistList->size / ITEMS_PER_PAGE > state.i_artistSongs) {
+        state.i_artistSongs++;
     }
-    return false;
+}
+
+void canPreviousPage() {
+    if (getMenuState() == MENU_ALL_SONGS && state.i_allSongs > 0) {
+        state.i_allSongs--;
+    }
+    if (getMenuState() == MENU_ARTIST_SONGS && state.i_artistSongs > 0) {
+        state.i_artistSongs--;
+    }
 }
 
 void handleKeypress(const SDL_Keysym ks) {
@@ -666,8 +678,9 @@ void handleKeypress(const SDL_Keysym ks) {
             loadAndPlaySongByIndex(keyIndex - 1);
         } else if (menu_state == MENU_ARTISTS) {
             setArtistState(keyIndex);
-            pushMenuState(MENU_ARTIST_PAGE);
-        } else if (menu_state == MENU_ARTIST_PAGE) {
+            state.i_artistSongs = 0; //reset for diff artist
+            pushMenuState(MENU_ARTIST_SONGS);
+        } else if (menu_state == MENU_ARTIST_SONGS) {
             loadAndPlaySongByName(keyIndex);
         }
     }
@@ -680,11 +693,11 @@ void handleKeypress(const SDL_Keysym ks) {
     if (k == SDLK_BACKSPACE) {
         pushMenuState(MENU_WELCOME);
     }
-    if (k == SDLK_KP_MULTIPLY || k == SDLK_RIGHT && canNextPage()) {
-        state.pageIndex++;
+    if (k == SDLK_KP_MULTIPLY || k == SDLK_RIGHT) {
+        canNextPage();
     }
-    if (k == SDLK_KP_DIVIDE || k == SDLK_LEFT && state.pageIndex > 0) {
-        state.pageIndex--;
+    if ((k == SDLK_KP_DIVIDE || k == SDLK_LEFT)) {
+        canPreviousPage();
     }
     if (k == SDLK_KP_MINUS) {
         adjustVolume(-4);
